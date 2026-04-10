@@ -26,6 +26,7 @@ import MyGrades from './pages/student/MyGrades';
 import MyAttendance from './pages/student/MyAttendance';
 import PaymentPortal from './pages/student/PaymentPortal';
 import Notifications from './pages/student/Notifications';
+import WhatIfSimulator from './pages/student/WhatIfSimulator';
 
 import AccountsDashboard from './pages/accounts/AccountsDashboard';
 import FinancialManagement from './pages/accounts/FinancialManagement';
@@ -66,6 +67,7 @@ export default function App() {
           <Route path="/student" element={<Wrap roles={['student']}><StudentDashboard /></Wrap>} />
           <Route path="/student/enroll" element={<Wrap roles={['student']}><CourseEnrollment /></Wrap>} />
           <Route path="/student/grades" element={<Wrap roles={['student']}><MyGrades /></Wrap>} />
+          <Route path="/student/whatif" element={<Wrap roles={['student']}><WhatIfSimulator /></Wrap>} />
           <Route path="/student/attendance" element={<Wrap roles={['student']}><MyAttendance /></Wrap>} />
           <Route path="/student/payments" element={<Wrap roles={['student']}><PaymentPortal /></Wrap>} />
           <Route path="/student/notifications" element={<Wrap roles={['student']}><Notifications /></Wrap>} />

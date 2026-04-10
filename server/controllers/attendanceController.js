@@ -43,9 +43,10 @@ const recalcCourseAttendance = async (courseId, studentIds) => {
     });
     const pct = calcAttendancePct(attended, totalClasses);
 
+    // Update any non-dropped enrollment (active OR completed)
     await Enrollment.update(
       { attendancePercentage: pct },
-      { where: { studentId, courseId, status: 'active' } }
+      { where: { studentId, courseId, status: { [Op.in]: ['active', 'completed'] } } }
     );
   }
 };

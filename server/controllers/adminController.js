@@ -36,9 +36,46 @@ const deleteDepartment = async (req, res) => {
   try {
     const dept = await Department.findByPk(req.params.id);
     if (!dept) return res.status(404).json({ error: 'Department not found' });
+
+    const programCount = await Program.count({ where: { deptId: req.params.id } });
+    if (programCount > 0) {
+      return res.status(400).json({
+        error: 'Department has programs — choose a merge target first',
+        programsExist: true,
+        programCount,
+      });
+    }
+
     await dept.destroy();
     return res.json({ message: 'Department deleted' });
   } catch (err) { return res.status(500).json({ error: 'Server error' }); }
+};
+
+const mergeDepartment = async (req, res) => {
+  const t = await db.transaction();
+  try {
+    const { fromId, toId } = req.body;
+    if (!fromId || !toId) return res.status(400).json({ error: 'fromId and toId are required' });
+    if (String(fromId) === String(toId)) return res.status(400).json({ error: 'Cannot merge a department into itself' });
+
+    const [from, to] = await Promise.all([
+      Department.findByPk(fromId),
+      Department.findByPk(toId),
+    ]);
+    if (!from) return res.status(404).json({ error: 'Source department not found' });
+    if (!to)   return res.status(404).json({ error: 'Target department not found' });
+
+    // Move programs and users to target department atomically
+    await Program.update({ deptId: toId }, { where: { deptId: fromId }, transaction: t });
+    await User.update(   { deptId: toId }, { where: { deptId: fromId }, transaction: t });
+    await from.destroy({ transaction: t });
+    await t.commit();
+
+    return res.json({ message: `All programs moved to "${to.name}" and source department deleted` });
+  } catch (err) {
+    await t.rollback();
+    return res.status(500).json({ error: 'Server error' });
+  }
 };
 
 // ─── Programs ─────────────────────────────────────────────────────────────────
@@ -119,11 +156,12 @@ const updateScholarship = async (req, res) => {
 // ─── Analytics dashboard ──────────────────────────────────────────────────────
 const getAnalytics = async (req, res) => {
   try {
-    const [totalStudents, totalFaculty, totalCourses, activeEnrollments] = await Promise.all([
+    const [totalStudents, totalFaculty, totalCourses, activeEnrollments, totalDepartments] = await Promise.all([
       Student.count(),
       Faculty.count(),
       Course.count({ where: { isActive: true } }),
       Enrollment.count({ where: { status: 'active' } }),
+      Department.count(),
     ]);
 
     // Department distribution
@@ -132,9 +170,10 @@ const getAnalytics = async (req, res) => {
     });
 
     return res.json({
-      overview: { totalStudents, totalFaculty, totalCourses, activeEnrollments },
+      overview: { totalStudents, totalFaculty, totalCourses, activeEnrollments, totalDepartments },
       departments: depts.map(d => ({
         name: d.name,
+        programCount: d.programs.length,
         studentCount: d.programs.reduce((s, p) => s + p.students.length, 0),
       })),
     });
@@ -155,7 +194,7 @@ const assignFaculty = async (req, res) => {
 };
 
 module.exports = {
-  getDepartments, createDepartment, updateDepartment, deleteDepartment,
+  getDepartments, createDepartment, updateDepartment, deleteDepartment, mergeDepartment,
   getPrograms, createProgram, updateProgram,
   createUser, createScholarship, updateScholarship,
   getAnalytics, assignFaculty,

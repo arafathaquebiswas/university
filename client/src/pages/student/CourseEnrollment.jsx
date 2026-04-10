@@ -5,7 +5,7 @@ import toast from 'react-hot-toast';
 export default function CourseEnrollment() {
   const [courses, setCourses] = useState([]);
   const [myEnrollments, setMyEnrollments] = useState([]);
-  const [semester, setSemester] = useState('Spring 2025');
+  const [semester, setSemester] = useState('Spring 2026');
   const [loading, setLoading] = useState(false);
 
   const load = async () => {
@@ -42,7 +42,7 @@ export default function CourseEnrollment() {
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold text-gray-900">Course Enrollment</h1>
         <select className="input-field w-48" value={semester} onChange={e => setSemester(e.target.value)}>
-          {['Spring 2025', 'Summer 2025', 'Fall 2025'].map(s => <option key={s}>{s}</option>)}
+          {['Spring 2026', 'Summer 2026', 'Fall 2026', 'Spring 2027'].map(s => <option key={s}>{s}</option>)}
         </select>
       </div>
 

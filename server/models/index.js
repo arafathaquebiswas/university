@@ -15,6 +15,7 @@ const FinancialRecord     = require('./FinancialRecord');
 const Announcement        = require('./Announcement');
 const Notification        = require('./Notification');
 const SemesterGPA         = require('./SemesterGPA');
+const CourseMaterial      = require('./CourseMaterial');
 
 // ─── Department ↔ Program ─────────────────────────────────────────────────────
 Department.hasMany(Program,  { foreignKey: 'deptId', as: 'programs' });
@@ -96,9 +97,15 @@ Announcement.belongsTo(User, { foreignKey: 'createdBy', as: 'creator' });
 User.hasMany(Notification,   { foreignKey: 'userId', as: 'notifications' });
 Notification.belongsTo(User, { foreignKey: 'userId', as: 'user' });
 
+// ─── CourseMaterial ───────────────────────────────────────────────────────────
+Course.hasMany(CourseMaterial,    { foreignKey: 'courseId',   as: 'materials' });
+CourseMaterial.belongsTo(Course,  { foreignKey: 'courseId',   as: 'course' });
+User.hasMany(CourseMaterial,      { foreignKey: 'uploadedBy', as: 'uploadedMaterials' });
+CourseMaterial.belongsTo(User,    { foreignKey: 'uploadedBy', as: 'uploader' });
+
 module.exports = {
   Department, Program, User, Student, Faculty, Admin, AccountsStaff,
   Course, CourseGradingPolicy, Grade, Enrollment,
   AttendanceRecord, Scholarship, FinancialRecord,
-  Announcement, Notification, SemesterGPA,
+  Announcement, Notification, SemesterGPA, CourseMaterial,
 };

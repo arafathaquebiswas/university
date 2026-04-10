@@ -1,6 +1,6 @@
 const router = require('express').Router();
 const {
-  getDepartments, createDepartment, updateDepartment, deleteDepartment,
+  getDepartments, createDepartment, updateDepartment, deleteDepartment, mergeDepartment,
   getPrograms, createProgram, updateProgram,
   createUser, createScholarship, updateScholarship,
   getAnalytics, assignFaculty,
@@ -15,6 +15,7 @@ router.get('/departments', authenticate, getDepartments);
 router.post('/departments', ...adminOnly, createDepartment);
 router.put('/departments/:id', ...adminOnly, updateDepartment);
 router.delete('/departments/:id', ...adminOnly, deleteDepartment);
+router.post('/departments/merge', ...adminOnly, mergeDepartment);
 router.get('/programs', authenticate, getPrograms);
 router.post('/programs', ...adminOnly, createProgram);
 router.put('/programs/:id', ...adminOnly, updateProgram);

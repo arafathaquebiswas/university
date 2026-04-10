@@ -116,14 +116,15 @@ const GradeRow = ({ enrollment, policy, onSaved }) => {
   const [quizInput, setQuizInput] = useState((g?.quizScores || []).join(', '));
   const [saving, setSaving] = useState(false);
 
-  const parseQuizzes = (str) => {
-    const scores = str.split(',').map(s => parseFloat(s.trim())).filter(n => !isNaN(n));
-    setForm(p => ({ ...p, quizScores: scores }));
-    return scores;
-  };
+  // Pure parser — no side effects, safe to call during render
+  const parseQuizStr = (str) =>
+    str.split(',').map(s => parseFloat(s.trim())).filter(n => !isNaN(n));
 
-  const preview = calcPreview({ ...form, quizScores: parseQuizzes(quizInput) || form.quizScores }, policy);
-  const { kept, droppedIndex, dropped } = applyNMinusOne(form.quizScores);
+  // Live quiz scores derived from the text input (for real-time preview)
+  const liveQuizScores = quizInput.trim() ? parseQuizStr(quizInput) : form.quizScores;
+
+  const preview = calcPreview({ ...form, quizScores: liveQuizScores }, policy);
+  const { kept, droppedIndex, dropped } = applyNMinusOne(liveQuizScores);
 
   const save = async (finalize = false) => {
     setSaving(true);
@@ -176,12 +177,16 @@ const GradeRow = ({ enrollment, policy, onSaved }) => {
             className="input-field text-sm"
             placeholder="e.g. 9, 8, 7, 10"
             value={quizInput}
-            onChange={e => { setQuizInput(e.target.value); parseQuizzes(e.target.value); }}
+            onChange={e => {
+              const str = e.target.value;
+              setQuizInput(str);
+              setForm(p => ({ ...p, quizScores: parseQuizStr(str) }));
+            }}
           />
           {/* N-1 breakdown */}
-          {form.quizScores.length > 0 && (
+          {liveQuizScores.length > 0 && (
             <div className="mt-1.5 flex flex-wrap gap-1">
-              {form.quizScores.map((s, i) => (
+              {liveQuizScores.map((s, i) => (
                 <span key={i}
                   className={`text-xs px-2 py-0.5 rounded-full font-medium ${i === preview.droppedIndex ? 'bg-red-100 text-red-700 line-through' : 'bg-green-100 text-green-700'}`}>
                   Q{i + 1}: {s}

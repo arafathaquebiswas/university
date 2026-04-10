@@ -31,11 +31,12 @@ export default function AdminDashboard() {
       </div>
 
       {analytics && (
-        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
-          <StatCard title="Total Students" value={analytics.overview.totalStudents} icon={AcademicCapIcon} color="blue" />
-          <StatCard title="Faculty Members" value={analytics.overview.totalFaculty} icon={UsersIcon} color="green" />
-          <StatCard title="Active Courses" value={analytics.overview.totalCourses} icon={BookOpenIcon} color="purple" />
-          <StatCard title="Active Enrollments" value={analytics.overview.activeEnrollments} icon={ClipboardDocumentListIcon} color="yellow" />
+        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-5 gap-4">
+          <StatCard title="Total Students"     value={analytics.overview.totalStudents}     icon={AcademicCapIcon}            color="blue"   />
+          <StatCard title="Faculty Members"    value={analytics.overview.totalFaculty}      icon={UsersIcon}                  color="green"  />
+          <StatCard title="Active Courses"     value={analytics.overview.totalCourses}      icon={BookOpenIcon}               color="purple" />
+          <StatCard title="Enrollments"        value={analytics.overview.activeEnrollments} icon={ClipboardDocumentListIcon}  color="yellow" />
+          <StatCard title="Departments"        value={analytics.overview.totalDepartments}  icon={BuildingOfficeIcon}         color="red"    />
         </div>
       )}
 
@@ -73,22 +74,27 @@ export default function AdminDashboard() {
         </div>
       </div>
 
-      {analytics?.departments && (
+      {analytics?.departments && analytics.departments.length > 0 && (
         <div className="card">
           <h2 className="text-lg font-semibold text-gray-800 mb-4">Department Overview</h2>
           <div className="space-y-3">
-            {analytics.departments.map(d => (
-              <div key={d.name} className="flex items-center gap-3">
-                <span className="text-sm text-gray-700 w-64 truncate">{d.name}</span>
-                <div className="flex-1 bg-gray-200 rounded-full h-2">
-                  <div
-                    className="bg-blue-500 h-2 rounded-full transition-all duration-500"
-                    style={{ width: `${Math.min((d.studentCount / Math.max(...analytics.departments.map(x => x.studentCount), 1)) * 100, 100)}%` }}
-                  />
+            {analytics.departments.map(d => {
+              const maxStudents = Math.max(...analytics.departments.map(x => x.studentCount), 1);
+              return (
+                <div key={d.name} className="flex items-center gap-3">
+                  <span className="text-sm text-gray-700 w-64 truncate" title={d.name}>{d.name}</span>
+                  <div className="flex-1 bg-gray-200 rounded-full h-2">
+                    <div
+                      className="bg-blue-500 h-2 rounded-full transition-all duration-500"
+                      style={{ width: `${Math.min((d.studentCount / maxStudents) * 100, 100)}%` }}
+                    />
+                  </div>
+                  <span className="text-xs text-gray-400 w-24 text-right">
+                    {d.programCount} prog · {d.studentCount} stu
+                  </span>
                 </div>
-                <span className="text-sm font-medium text-gray-600 w-16 text-right">{d.studentCount} students</span>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
       )}

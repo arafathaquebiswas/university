@@ -5,6 +5,7 @@ const morgan = require('morgan');
 const sequelize = require('./config/database');
 require('./models'); // initialize associations
 
+const path = require('path');
 const authRoutes = require('./routes/auth');
 const userRoutes = require('./routes/users');
 const courseRoutes = require('./routes/courses');
@@ -15,6 +16,7 @@ const financeRoutes = require('./routes/finance');
 const notificationRoutes = require('./routes/notifications');
 const adminRoutes = require('./routes/admin');
 const announcementRoutes = require('./routes/announcements');
+const materialRoutes = require('./routes/materials');
 
 const app = express();
 
@@ -22,6 +24,9 @@ app.use(cors({ origin: 'http://localhost:5173', credentials: true }));
 app.use(morgan('dev'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+
+// Serve uploaded files (PDFs, docs) as static assets
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 // Routes
 app.use('/api/auth', authRoutes);
@@ -34,6 +39,7 @@ app.use('/api/finance', financeRoutes);
 app.use('/api/notifications', notificationRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/announcements', announcementRoutes);
+app.use('/api/materials', materialRoutes);
 
 // Health check
 app.get('/api/health', (req, res) => res.json({ status: 'ok', timestamp: new Date() }));

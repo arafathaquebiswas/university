@@ -4,7 +4,7 @@ import toast from 'react-hot-toast';
 
 export default function GenerateInvoice() {
   const [students, setStudents] = useState([]);
-  const [form, setForm] = useState({ studentId: '', amount: '', type: 'tuition', semester: 'Spring 2025', dueDate: '', description: '' });
+  const [form, setForm] = useState({ studentId: '', amount: '', type: 'tuition', semester: 'Spring 2026', dueDate: '', description: '' });
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
