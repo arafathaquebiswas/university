@@ -1,0 +1,123 @@
+import { useEffect, useState } from 'react';
+import api from '../../api/axios';
+
+const statusColors = { present:'badge-green', absent:'badge-red', late:'badge-yellow', excused:'badge-blue' };
+
+const ArcGauge = ({ pct }) => {
+  const color = pct >= 90 ? '#10b981' : pct >= 75 ? '#3b82f6' : pct >= 60 ? '#f59e0b' : '#ef4444';
+  const r = 36, cx = 44, cy = 44, stroke = 8;
+  const circumference = Math.PI * r; // half circle
+  const dash = (pct / 100) * circumference;
+  return (
+    <svg width="88" height="52" viewBox="0 0 88 52">
+      <path d={`M ${cx - r} ${cy} A ${r} ${r} 0 0 1 ${cx + r} ${cy}`} fill="none" stroke="#e5e7eb" strokeWidth={stroke} />
+      <path d={`M ${cx - r} ${cy} A ${r} ${r} 0 0 1 ${cx + r} ${cy}`} fill="none" stroke={color} strokeWidth={stroke}
+        strokeDasharray={`${dash} ${circumference}`} strokeLinecap="round" />
+      <text x={cx} y={cy - 4} textAnchor="middle" fontSize="13" fontWeight="700" fill={color}>{pct.toFixed(0)}%</text>
+    </svg>
+  );
+};
+
+export default function MyAttendance() {
+  const [data, setData] = useState([]);
+  const [selected, setSelected] = useState(null);
+
+  useEffect(() => {
+    api.get('/attendance/my').then(r => setData(r.data)).catch(() => {});
+  }, []);
+
+  const overall = data.length
+    ? (data.reduce((s, d) => s + d.percentage, 0) / data.length).toFixed(1)
+    : 0;
+
+  const warnings = data.filter(d => d.warning);
+
+  return (
+    <div className="space-y-6">
+      <div className="flex items-start justify-between">
+        <div>
+          <h1 className="text-2xl font-bold text-gray-900">My Attendance</h1>
+          <p className="text-sm text-gray-500">{data.length} courses tracked</p>
+        </div>
+        <div className="card text-center px-5 py-3">
+          <p className="text-xs text-gray-500">Overall Avg</p>
+          <p className={`text-2xl font-black ${parseFloat(overall) >= 75 ? 'text-green-600' : 'text-red-600'}`}>{overall}%</p>
+        </div>
+      </div>
+
+      {/* Warnings */}
+      {warnings.length > 0 && (
+        <div className="bg-red-50 border border-red-200 rounded-xl p-4">
+          <p className="font-semibold text-red-700 mb-2">⚠ Attendance Warning</p>
+          {warnings.map(w => (
+            <p key={w.course.courseId} className="text-sm text-red-600">
+              {w.course.courseCode} — {w.course.title}: <strong>{w.percentage.toFixed(1)}%</strong>
+              {' '}({w.missed} classes missed) — Below 75% threshold!
+            </p>
+          ))}
+        </div>
+      )}
+
+      {/* Course cards */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        {data.map(d => (
+          <div key={d.course.courseId}
+            onClick={() => setSelected(selected === d.course.courseId ? null : d.course.courseId)}
+            className={`card cursor-pointer hover:shadow-md transition-shadow ${d.warning ? 'border-l-4 border-l-red-400' : ''}`}>
+            <div className="flex items-start justify-between">
+              <div className="flex-1">
+                <div className="flex items-center gap-2 mb-1">
+                  <span className="badge-blue">{d.course.courseCode}</span>
+                  <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${
+                    d.status.level === 'excellent' ? 'bg-emerald-100 text-emerald-700' :
+                    d.status.level === 'good'      ? 'bg-blue-100 text-blue-700' :
+                    d.status.level === 'warning'   ? 'bg-yellow-100 text-yellow-700' :
+                                                     'bg-red-100 text-red-700'
+                  }`}>{d.status.label}</span>
+                </div>
+                <p className="font-semibold text-gray-800">{d.course.title}</p>
+                <div className="flex gap-4 mt-2 text-xs text-gray-500">
+                  <span>Total: <strong>{d.totalClasses}</strong></span>
+                  <span className="text-green-600">Present: <strong>{d.attended}</strong></span>
+                  <span className="text-red-500">Absent: <strong>{d.absent}</strong></span>
+                </div>
+                <div className="mt-2 h-2 bg-gray-200 rounded-full overflow-hidden">
+                  <div className={`h-full rounded-full transition-all duration-500 ${
+                    d.percentage >= 90 ? 'bg-emerald-500' :
+                    d.percentage >= 75 ? 'bg-blue-500' :
+                    d.percentage >= 60 ? 'bg-yellow-500' : 'bg-red-500'
+                  }`} style={{ width: `${d.percentage}%` }} />
+                </div>
+                {d.warning && (
+                  <p className="text-xs text-red-600 mt-1">
+                    ⚠ Need {Math.ceil((0.75 * d.totalClasses) - d.attended)} more classes to reach 75%
+                  </p>
+                )}
+              </div>
+              <ArcGauge pct={d.percentage} />
+            </div>
+
+            {/* Expandable record list */}
+            {selected === d.course.courseId && d.records.length > 0 && (
+              <div className="mt-4 border-t pt-4">
+                <p className="text-xs font-medium text-gray-600 mb-2">Class Record</p>
+                <div className="max-h-48 overflow-y-auto space-y-1">
+                  {d.records.map((r, i) => (
+                    <div key={i} className="flex items-center justify-between text-xs">
+                      <span className="text-gray-500">{r.date}</span>
+                      <span className={statusColors[r.status] || 'badge-gray'}>{r.status}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+        ))}
+      </div>
+
+      {data.length === 0 && (
+        <div className="card text-center py-16 text-gray-400">No attendance records yet</div>
+      )}
+    </div>
+  );
+}
