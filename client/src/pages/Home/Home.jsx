@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom'; // 1. Import useNavigate
+import { useNavigate } from 'react-router-dom';
 import Navbar from '../../components/Navbar';
+import api from '../../api/axios';
 
 // Updated SectionCard to accept a 'path' prop
 const SectionCard = ({ title, img, path }) => {
@@ -25,9 +26,18 @@ const SectionCard = ({ title, img, path }) => {
   );
 };
 
+const categoryColors = {
+  exam:         'bg-red-100 text-red-700 border-red-200',
+  registration: 'bg-blue-100 text-blue-700 border-blue-200',
+  holiday:      'bg-green-100 text-green-700 border-green-200',
+  event:        'bg-purple-100 text-purple-700 border-purple-200',
+  deadline:     'bg-orange-100 text-orange-700 border-orange-200',
+};
+
 const Home = () => {
   const [currentImage, setCurrentImage] = useState(0);
-  const navigate = useNavigate(); // 4. Hook for hero buttons
+  const [importantDates, setImportantDates] = useState([]);
+  const navigate = useNavigate();
 
   // Fixed: Removed "Public/" from paths as Vite serves from public root
   const slides = [
@@ -42,6 +52,10 @@ const Home = () => {
     }, 5000);
     return () => clearInterval(timer);
   }, [slides.length]);
+
+  useEffect(() => {
+    api.get('/admin/dates').then(r => setImportantDates(r.data)).catch(() => {});
+  }, []);
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -93,23 +107,55 @@ const Home = () => {
           Our University at a Glance
         </h2>
         <div className="grid md:grid-cols-3 gap-8">
-          {/* 7. Pass the paths to the cards */}
-          <SectionCard 
-            title="Academics" 
-            img="Public/Sectioncard images/Sectioncard academics.jpg" 
-            path="/academics" 
+          <SectionCard
+            title="Academics"
+            img="Public/Sectioncard images/Sectioncard academics.jpg"
+            path="/academics"
           />
-          <SectionCard 
-            title="Research" 
-            img="Public/Sectioncard images/Sectioncard research.jpg" 
-            path="/research" 
+          <SectionCard
+            title="Research"
+            img="Public/Sectioncard images/Sectioncard research.jpg"
+            path="/research"
           />
-          <SectionCard 
-            title="Student Life" 
-            img="Public/Sectioncard images/Sectioncard studentlife.jpg" 
-            path="/student-life" 
+          <SectionCard
+            title="Student Life"
+            img="Public/Sectioncard images/Sectioncard studentlife.jpg"
+            path="/student-life"
           />
         </div>
+
+        {/* Important Dates */}
+        {importantDates.length > 0 && (
+          <div className="mt-20">
+            <h2 className="text-3xl font-bold text-blue-900 mb-8 text-center underline decoration-yellow-500 underline-offset-8">
+              Important Dates
+            </h2>
+            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              {importantDates.map(d => (
+                <div key={d.dateId} className="bg-white rounded-xl border border-gray-200 shadow-sm p-5 flex gap-4 hover:shadow-md transition-shadow">
+                  <div className="flex-shrink-0 text-center">
+                    <p className="text-2xl font-black text-blue-900 leading-none">
+                      {new Date(d.eventDate).getUTCDate()}
+                    </p>
+                    <p className="text-xs text-gray-500 uppercase tracking-wide font-medium">
+                      {new Date(d.eventDate).toLocaleDateString('en-US', { month: 'short', timeZone: 'UTC' })}
+                    </p>
+                    <p className="text-xs text-gray-400">
+                      {new Date(d.eventDate).getUTCFullYear()}
+                    </p>
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <span className={`inline-block text-xs font-semibold px-2 py-0.5 rounded border mb-1 capitalize ${categoryColors[d.category] || 'bg-gray-100 text-gray-600 border-gray-200'}`}>
+                      {d.category}
+                    </span>
+                    <p className="font-semibold text-gray-800 text-sm leading-snug">{d.title}</p>
+                    {d.description && <p className="text-xs text-gray-500 mt-1 line-clamp-2">{d.description}</p>}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
       </main>
     </div>
   );

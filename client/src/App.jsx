@@ -24,6 +24,7 @@ import ManageDepartments from './pages/admin/ManageDepartments';
 import ManageCourses from './pages/admin/ManageCourses';
 import Analytics from './pages/admin/Analytics';
 import ManageScholarships from './pages/admin/ManageScholarships';
+import ManageAnnouncements from './pages/admin/ManageAnnouncements';
 
 // Faculty Pages
 import FacultyDashboard from './pages/faculty/FacultyDashboard';
@@ -106,6 +107,7 @@ export default function App() {
           <Route path="/admin/courses" element={<Wrap roles={['admin']}><ManageCourses /></Wrap>} />
           <Route path="/admin/analytics" element={<Wrap roles={['admin']}><Analytics /></Wrap>} />
           <Route path="/admin/scholarships" element={<Wrap roles={['admin']}><ManageScholarships /></Wrap>} />
+          <Route path="/admin/announcements" element={<Wrap roles={['admin']}><ManageAnnouncements /></Wrap>} />
 
           {/* ==========================================
               FACULTY ROUTES

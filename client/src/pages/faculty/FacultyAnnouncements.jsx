@@ -20,7 +20,11 @@ export default function FacultyAnnouncements() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      await api.post('/announcements', form);
+      const payload = {
+        ...form,
+        courseId: form.courseId || null,
+      };
+      await api.post('/announcements', payload);
       toast.success('Announcement posted!');
       setShowForm(false);
       setForm({ title: '', content: '', courseId: '', isGlobal: false });

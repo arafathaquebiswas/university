@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import api from '../../api/axios';
+import toast from 'react-hot-toast';
 
 const gradeColor = (g) => {
   if (!g) return 'text-gray-300';
@@ -50,6 +51,7 @@ const Bar = ({ value, color = 'bg-blue-500', max = 100 }) => (
 export default function MyGrades() {
   const [data, setData] = useState({ enrollments: [], semesterGPAs: [], currentCGPA: 0 });
   const [selected, setSelected] = useState(null);
+  const [downloading, setDownloading] = useState(false);
 
   useEffect(() => {
     api.get('/grades/my').then(r => setData(r.data)).catch(() => {});
@@ -57,6 +59,23 @@ export default function MyGrades() {
 
   const withGrade = data.enrollments.filter(e => e.grade);
   const totalCredits = withGrade.filter(e => e.grade?.isFinalized).reduce((s, e) => s + (e.course?.credits || 3), 0);
+
+  const handleDownloadPDF = async () => {
+    setDownloading(true);
+    try {
+      const res = await api.get('/grades/gradesheet/pdf', { responseType: 'blob' });
+      const url = URL.createObjectURL(new Blob([res.data], { type: 'application/pdf' }));
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'grade_sheet.pdf';
+      a.click();
+      URL.revokeObjectURL(url);
+    } catch {
+      toast.error('Failed to download grade sheet');
+    } finally {
+      setDownloading(false);
+    }
+  };
 
   return (
     <div className="space-y-8">
@@ -78,6 +97,15 @@ export default function MyGrades() {
             <span className="text-xs font-medium text-blue-600 mt-1">What-If</span>
             <span className="text-xs text-gray-400">Simulator</span>
           </Link>
+          <button
+            onClick={handleDownloadPDF}
+            disabled={downloading}
+            className="card text-center py-4 px-6 border-2 border-dashed border-green-300 hover:border-green-500 hover:bg-green-50 transition-all cursor-pointer flex flex-col items-center justify-center disabled:opacity-50"
+          >
+            <span className="text-2xl">📄</span>
+            <span className="text-xs font-medium text-green-600 mt-1">{downloading ? 'Generating…' : 'Download'}</span>
+            <span className="text-xs text-gray-400">Grade Sheet</span>
+          </button>
         </div>
       </div>
 

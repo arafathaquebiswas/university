@@ -16,6 +16,7 @@ const Announcement        = require('./Announcement');
 const Notification        = require('./Notification');
 const SemesterGPA         = require('./SemesterGPA');
 const CourseMaterial      = require('./CourseMaterial');
+const ImportantDate       = require('./ImportantDate');
 
 // ─── Department ↔ Program ─────────────────────────────────────────────────────
 Department.hasMany(Program,  { foreignKey: 'deptId', as: 'programs' });
@@ -107,5 +108,5 @@ module.exports = {
   Department, Program, User, Student, Faculty, Admin, AccountsStaff,
   Course, CourseGradingPolicy, Grade, Enrollment,
   AttendanceRecord, Scholarship, FinancialRecord,
-  Announcement, Notification, SemesterGPA, CourseMaterial,
+  Announcement, Notification, SemesterGPA, CourseMaterial, ImportantDate,
 };

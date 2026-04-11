@@ -65,6 +65,9 @@ export default function Login() {
           New student?{' '}
           <Link to="/register" className="text-blue-600 hover:underline font-medium">Register here</Link>
         </p>
+        <p className="text-center text-sm text-gray-400 mt-2">
+          <Link to="/" className="hover:text-blue-600 transition-colors">← Back to Home</Link>
+        </p>
 
         <div className="mt-6 p-4 bg-gray-50 rounded-lg text-xs text-gray-500 space-y-1">
           <p className="font-medium text-gray-600">Demo Credentials:</p>

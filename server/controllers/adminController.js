@@ -1,5 +1,5 @@
 const bcrypt = require('bcryptjs');
-const { Department, Program, User, Student, Faculty, Admin, AccountsStaff, Course, Enrollment, Scholarship, sequelize } = require('../models');
+const { Department, Program, User, Student, Faculty, Admin, AccountsStaff, Course, Enrollment, Scholarship, ImportantDate } = require('../models');
 const db = require('../config/database');
 
 // ─── Departments ─────────────────────────────────────────────────────────────
@@ -193,9 +193,48 @@ const assignFaculty = async (req, res) => {
   } catch (err) { return res.status(500).json({ error: 'Server error' }); }
 };
 
+// ─── Important Dates ─────────────────────────────────────────────────────────
+const getImportantDates = async (req, res) => {
+  try {
+    const dates = await ImportantDate.findAll({
+      where: { isActive: true },
+      order: [['eventDate', 'ASC']],
+    });
+    return res.json(dates);
+  } catch (err) { return res.status(500).json({ error: 'Server error' }); }
+};
+
+const createImportantDate = async (req, res) => {
+  try {
+    const { title, description, eventDate, category } = req.body;
+    if (!title || !eventDate) return res.status(400).json({ error: 'title and eventDate are required' });
+    const date = await ImportantDate.create({ title, description, eventDate, category });
+    return res.status(201).json(date);
+  } catch (err) { return res.status(500).json({ error: 'Server error' }); }
+};
+
+const updateImportantDate = async (req, res) => {
+  try {
+    const date = await ImportantDate.findByPk(req.params.id);
+    if (!date) return res.status(404).json({ error: 'Date not found' });
+    await date.update(req.body);
+    return res.json(date);
+  } catch (err) { return res.status(500).json({ error: 'Server error' }); }
+};
+
+const deleteImportantDate = async (req, res) => {
+  try {
+    const date = await ImportantDate.findByPk(req.params.id);
+    if (!date) return res.status(404).json({ error: 'Date not found' });
+    await date.destroy();
+    return res.json({ message: 'Deleted' });
+  } catch (err) { return res.status(500).json({ error: 'Server error' }); }
+};
+
 module.exports = {
   getDepartments, createDepartment, updateDepartment, deleteDepartment, mergeDepartment,
   getPrograms, createProgram, updateProgram,
   createUser, createScholarship, updateScholarship,
   getAnalytics, assignFaculty,
+  createImportantDate, getImportantDates, updateImportantDate, deleteImportantDate,
 };

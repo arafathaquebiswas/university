@@ -2,6 +2,7 @@ const router = require('express').Router();
 const {
   submitGrade, getMyGrades, getStudentGrades, getCourseGrades,
   whatIf, getCoursePolicy, setCoursePolicy, getScholarshipStatus,
+  downloadGradeSheet,
 } = require('../controllers/gradeController');
 const { authenticate } = require('../middleware/auth');
 const { authorize } = require('../middleware/roleCheck');
@@ -14,5 +15,6 @@ router.get('/scholarship/:studentId', authenticate, getScholarshipStatus);
 router.post('/',                    authenticate, authorize('faculty','admin'), submitGrade);
 router.post('/whatif',              authenticate, whatIf);
 router.put('/policy/:courseId',     authenticate, authorize('faculty','admin'), setCoursePolicy);
+router.get('/gradesheet/pdf',       authenticate, authorize('student'), downloadGradeSheet);
 
 module.exports = router;

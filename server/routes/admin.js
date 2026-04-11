@@ -4,6 +4,7 @@ const {
   getPrograms, createProgram, updateProgram,
   createUser, createScholarship, updateScholarship,
   getAnalytics, assignFaculty,
+  createImportantDate, getImportantDates, updateImportantDate, deleteImportantDate,
 } = require('../controllers/adminController');
 const { authenticate } = require('../middleware/auth');
 const { authorize } = require('../middleware/roleCheck');
@@ -22,5 +23,12 @@ router.post('/users', ...adminOnly, createUser);
 router.post('/scholarships', ...adminOnly, createScholarship);
 router.put('/scholarships/:id', ...adminOnly, updateScholarship);
 router.post('/assign-faculty', ...adminOnly, assignFaculty);
+router.post('/departments/merge', ...adminOnly, mergeDepartment);
+
+// Important dates — public read, admin write
+router.get('/dates', getImportantDates);
+router.post('/dates', ...adminOnly, createImportantDate);
+router.put('/dates/:id', ...adminOnly, updateImportantDate);
+router.delete('/dates/:id', ...adminOnly, deleteImportantDate);
 
 module.exports = router;
