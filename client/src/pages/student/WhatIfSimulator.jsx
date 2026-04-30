@@ -48,38 +48,58 @@ export default function WhatIfSimulator() {
         <p className="text-sm text-gray-500">See how your final exam score affects your grade</p>
       </div>
 
-      {/* Course picker */}
-      <div className="card">
-        <div className="flex flex-wrap gap-4 items-end">
-          <div className="flex-1 min-w-48">
-            <label className="block text-sm font-medium text-gray-700 mb-1">Select Course</label>
-            <select className="input-field" value={selected}
-              onChange={e => { setSelected(e.target.value); setResult(null); }}>
-              <option value="">Choose a course…</option>
-              {enrollments.map(e => (
-                <option key={e.enrollId} value={e.enrollId}>
-                  {e.course?.courseCode} — {e.course?.title}
-                </option>
-              ))}
-            </select>
-          </div>
+      {/* Course picker + score controls */}
+      <div className="card space-y-5">
 
-          <div className="w-48">
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              What-If Final Score: <strong className="text-blue-600">{whatIfFinal}</strong>
-            </label>
-            <input type="range" min="0" max="100" step="1"
-              className="w-full accent-blue-600"
+        {/* Row 1 — course selection */}
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">Select Course</label>
+          <select className="input-field" value={selected}
+            onChange={e => { setSelected(e.target.value); setResult(null); }}>
+            <option value="">Choose a course…</option>
+            {enrollments.map(e => (
+              <option key={e.enrollId} value={e.enrollId}>
+                {e.course?.courseCode} — {e.course?.title}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        {/* Row 2 — slider + number input */}
+        <div>
+          <div className="flex items-center justify-between mb-2">
+            <label className="text-sm font-medium text-gray-700">What-If Final Score:</label>
+            <input
+              type="number" min="0" max="100" step="1"
               value={whatIfFinal}
-              onChange={e => { setWhatIfFinal(e.target.value); if (selected) simulate(selected, e.target.value); }}
+              onChange={e => {
+                const v = Math.min(100, Math.max(0, Number(e.target.value)));
+                setWhatIfFinal(v);
+                if (selected) simulate(selected, v);
+              }}
+              className="w-20 text-center font-bold text-blue-600 border border-blue-300 rounded-lg px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
             />
           </div>
-
-          <button onClick={() => simulate()} disabled={!selected || loading}
-            className="btn-primary px-6 py-2.5 disabled:opacity-50">
-            {loading ? 'Simulating…' : 'Simulate'}
-          </button>
+          <input
+            type="range" min="0" max="100" step="1"
+            className="w-full accent-blue-600 cursor-pointer"
+            value={whatIfFinal}
+            onChange={e => {
+              setWhatIfFinal(e.target.value);
+              if (selected) simulate(selected, e.target.value);
+            }}
+          />
+          <div className="flex justify-between text-xs text-gray-400 mt-1 px-0.5">
+            <span>0</span><span>25</span><span>50</span><span>75</span><span>100</span>
+          </div>
         </div>
+
+        {/* Row 3 — simulate button */}
+        <button onClick={() => simulate()} disabled={!selected || loading}
+          className="btn-primary w-full py-2.5 disabled:opacity-50">
+          {loading ? 'Simulating…' : 'Simulate'}
+        </button>
+
       </div>
 
       {/* Current marks snapshot */}

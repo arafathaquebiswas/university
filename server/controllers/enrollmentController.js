@@ -1,5 +1,8 @@
-const { Enrollment, Student, Course, Grade, User, Notification } = require('../models');
+const { Enrollment, Student, Course, Grade, User, Notification, FinancialRecord } = require('../models');
 const { Op } = require('sequelize');
+
+const COURSE_FEE   = 20000;
+const SEMESTER_FEE = 10000;
 
 // POST /api/enrollments  — student enrolls
 const enroll = async (req, res) => {
@@ -27,10 +30,40 @@ const enroll = async (req, res) => {
 
     const enrollment = await Enrollment.create({ studentId: student.studentId, courseId, semester });
 
+    // Create semester registration fee if not already generated for this semester
+    const semFeeExists = await FinancialRecord.findOne({
+      where: {
+        studentId: student.studentId,
+        semester,
+        type: 'tuition',
+        description: { [Op.like]: 'Semester Registration Fee%' },
+      },
+    });
+    if (!semFeeExists) {
+      await FinancialRecord.create({
+        studentId: student.studentId,
+        amount: SEMESTER_FEE,
+        type: 'tuition',
+        status: 'pending',
+        semester,
+        description: `Semester Registration Fee — ${semester}`,
+      });
+    }
+
+    // Course fee for this enrollment
+    await FinancialRecord.create({
+      studentId: student.studentId,
+      amount: COURSE_FEE,
+      type: 'tuition',
+      status: 'pending',
+      semester,
+      description: `Course Fee: ${course.title} (${course.courseCode})`,
+    });
+
     await Notification.create({
       userId: req.user.userId,
       type: 'enrollment',
-      message: `You have successfully enrolled in ${course.title} for ${semester}.`,
+      message: `Enrolled in ${course.title} for ${semester}. BDT ${COURSE_FEE.toLocaleString()} course fee added to your account.`,
     });
 
     return res.status(201).json(enrollment);

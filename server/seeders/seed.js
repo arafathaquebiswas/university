@@ -71,11 +71,11 @@ async function seed() {
 
   // ── Courses ──────────────────────────────────────────────────────────────────
   const [c1, c2, c3, c4, c5] = await Course.bulkCreate([
-    { courseCode:'CSE101', title:'Introduction to Programming', credits:3, progId:bscCSE.progId, facultyId:fac1.facultyId, semester:'Spring 2025', maxCapacity:40 },
-    { courseCode:'CSE201', title:'Data Structures & Algorithms', credits:3, progId:bscCSE.progId, facultyId:fac1.facultyId, semester:'Spring 2025', maxCapacity:35 },
-    { courseCode:'CSE301', title:'Software Engineering',         credits:3, progId:bscCSE.progId, facultyId:fac3.facultyId, semester:'Spring 2025', maxCapacity:30 },
-    { courseCode:'EEE201', title:'Circuit Analysis',             credits:3, progId:bscEEE.progId, facultyId:fac2.facultyId, semester:'Spring 2025', maxCapacity:30 },
-    { courseCode:'CSE401', title:'Machine Learning',             credits:3, progId:bscCSE.progId, facultyId:fac1.facultyId, semester:'Spring 2025', maxCapacity:25 },
+    { courseCode:'CSE101', title:'Introduction to Programming', credits:3, progId:bscCSE.progId, facultyId:fac1.facultyId, semester:'Spring 2026', maxCapacity:40 },
+    { courseCode:'CSE201', title:'Data Structures & Algorithms', credits:3, progId:bscCSE.progId, facultyId:fac1.facultyId, semester:'Spring 2026', maxCapacity:35 },
+    { courseCode:'CSE301', title:'Software Engineering',         credits:3, progId:bscCSE.progId, facultyId:fac3.facultyId, semester:'Spring 2026', maxCapacity:30 },
+    { courseCode:'EEE201', title:'Circuit Analysis',             credits:3, progId:bscEEE.progId, facultyId:fac2.facultyId, semester:'Spring 2026', maxCapacity:30 },
+    { courseCode:'CSE401', title:'Machine Learning',             credits:3, progId:bscCSE.progId, facultyId:fac1.facultyId, semester:'Spring 2026', maxCapacity:25 },
   ]);
 
   // ── Grading Policies ─────────────────────────────────────────────────────────
@@ -212,12 +212,40 @@ async function seed() {
   ]);
 
   // ── Financial Records ─────────────────────────────────────────────────────────
+  // Fee rules: BDT 20,000 per course + BDT 10,000 semester registration fee
+  const COURSE_FEE   = 20000;
+  const SEMESTER_FEE = 10000;
+  const DUE = '2025-01-15';
+
+  // ali_khan: 3 courses (CSE101, CSE201, CSE401) → 70,000 — paid
   await FinancialRecord.bulkCreate([
-    { studentId:stu1.studentId, amount:85000, type:'tuition', status:'paid',    semester:'Spring 2025', dueDate:'2025-01-15', paymentDate:'2025-01-10', description:'Spring 2025 tuition' },
-    { studentId:stu2.studentId, amount:85000, type:'tuition', status:'pending', semester:'Spring 2025', dueDate:'2025-01-15', description:'Spring 2025 tuition' },
-    { studentId:stu3.studentId, amount:85000, type:'tuition', status:'overdue', semester:'Spring 2025', dueDate:'2025-01-15', description:'Spring 2025 tuition' },
-    { studentId:stu4.studentId, amount:85000, type:'tuition', status:'paid',    semester:'Spring 2025', dueDate:'2025-01-15', paymentDate:'2025-01-08', description:'Spring 2025 tuition' },
-    { studentId:stu4.studentId, amount:42500, type:'scholarship', status:'paid', semester:'Spring 2025', scholarshipId:merit.scholarshipId, paymentDate:'2025-01-10', description:'Merit Scholarship 50%' },
+    { studentId:stu1.studentId, amount:SEMESTER_FEE, type:'tuition', status:'paid', semester:'Spring 2025', dueDate:DUE, paymentDate:'2025-01-10', description:'Semester Registration Fee — Spring 2025' },
+    { studentId:stu1.studentId, amount:COURSE_FEE,   type:'tuition', status:'paid', semester:'Spring 2025', dueDate:DUE, paymentDate:'2025-01-10', description:'Course Fee: Introduction to Programming (CSE101)' },
+    { studentId:stu1.studentId, amount:COURSE_FEE,   type:'tuition', status:'paid', semester:'Spring 2025', dueDate:DUE, paymentDate:'2025-01-10', description:'Course Fee: Data Structures & Algorithms (CSE201)' },
+    { studentId:stu1.studentId, amount:COURSE_FEE,   type:'tuition', status:'paid', semester:'Spring 2025', dueDate:DUE, paymentDate:'2025-01-10', description:'Course Fee: Machine Learning (CSE401)' },
+  ]);
+
+  // sara_ahmed: 3 courses (CSE101, CSE301, CSE201) → 70,000 — pending
+  await FinancialRecord.bulkCreate([
+    { studentId:stu2.studentId, amount:SEMESTER_FEE, type:'tuition', status:'pending', semester:'Spring 2025', dueDate:DUE, description:'Semester Registration Fee — Spring 2025' },
+    { studentId:stu2.studentId, amount:COURSE_FEE,   type:'tuition', status:'pending', semester:'Spring 2025', dueDate:DUE, description:'Course Fee: Introduction to Programming (CSE101)' },
+    { studentId:stu2.studentId, amount:COURSE_FEE,   type:'tuition', status:'pending', semester:'Spring 2025', dueDate:DUE, description:'Course Fee: Software Engineering (CSE301)' },
+    { studentId:stu2.studentId, amount:COURSE_FEE,   type:'tuition', status:'pending', semester:'Spring 2025', dueDate:DUE, description:'Course Fee: Data Structures & Algorithms (CSE201)' },
+  ]);
+
+  // rahim_mia: 1 course (EEE201) → 30,000 — overdue
+  await FinancialRecord.bulkCreate([
+    { studentId:stu3.studentId, amount:SEMESTER_FEE, type:'tuition', status:'overdue', semester:'Spring 2025', dueDate:DUE, description:'Semester Registration Fee — Spring 2025' },
+    { studentId:stu3.studentId, amount:COURSE_FEE,   type:'tuition', status:'overdue', semester:'Spring 2025', dueDate:DUE, description:'Course Fee: Circuit Analysis (EEE201)' },
+  ]);
+
+  // nusrat_jahan: 3 courses (CSE101, CSE201, CSE401) → 70,000 — paid + merit scholarship
+  await FinancialRecord.bulkCreate([
+    { studentId:stu4.studentId, amount:SEMESTER_FEE,        type:'tuition',     status:'paid', semester:'Spring 2025', dueDate:DUE, paymentDate:'2025-01-08', description:'Semester Registration Fee — Spring 2025' },
+    { studentId:stu4.studentId, amount:COURSE_FEE,          type:'tuition',     status:'paid', semester:'Spring 2025', dueDate:DUE, paymentDate:'2025-01-08', description:'Course Fee: Introduction to Programming (CSE101)' },
+    { studentId:stu4.studentId, amount:COURSE_FEE,          type:'tuition',     status:'paid', semester:'Spring 2025', dueDate:DUE, paymentDate:'2025-01-08', description:'Course Fee: Data Structures & Algorithms (CSE201)' },
+    { studentId:stu4.studentId, amount:COURSE_FEE,          type:'tuition',     status:'paid', semester:'Spring 2025', dueDate:DUE, paymentDate:'2025-01-08', description:'Course Fee: Machine Learning (CSE401)' },
+    { studentId:stu4.studentId, amount:merit.amount,        type:'scholarship', status:'paid', semester:'Spring 2025', scholarshipId:merit.scholarshipId, paymentDate:'2025-01-10', description:'Merit Scholarship 50%' },
   ]);
 
   // ── Announcements ─────────────────────────────────────────────────────────────
@@ -233,10 +261,10 @@ async function seed() {
     { userId:su1.userId, type:'grade',       message:'Grade finalized for CSE101: B+ (81.8)', status:'unread' },
     { userId:su1.userId, type:'payment',     message:'Spring 2025 tuition paid. Thank you!',  status:'read'   },
     { userId:su2.userId, type:'attendance',  message:'⚠ Warning: Attendance in CSE201 is below 75%', status:'unread' },
-    { userId:su2.userId, type:'payment',     message:'Spring 2025 tuition fee BDT 85,000 is pending. Due Jan 15.', status:'unread' },
+    { userId:su2.userId, type:'payment',     message:'Spring 2025 fees BDT 70,000 are pending (3 courses × BDT 20,000 + BDT 10,000 semester fee). Due Jan 15.', status:'unread' },
     { userId:su4.userId, type:'payment',     message:'Merit Scholarship 50% applied — BDT 42,500 credited!', status:'unread' },
     { userId:su4.userId, type:'grade',       message:'Grade finalized for CSE101: A+ (97.2)', status:'unread' },
-    { userId:su3.userId, type:'payment',     message:'⚠ Overdue: Spring 2025 tuition BDT 85,000 is overdue.',  status:'unread' },
+    { userId:su3.userId, type:'payment',     message:'⚠ Overdue: Spring 2025 fees BDT 30,000 are overdue (1 course × BDT 20,000 + BDT 10,000 semester fee).', status:'unread' },
   ]);
 
   // ── Done ────────────────────────────────────────────────────────────────────

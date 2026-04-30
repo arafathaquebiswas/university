@@ -1,19 +1,35 @@
-const { Course, Faculty, Program, User, Enrollment } = require('../models');
+const { Course, Faculty, Program, User, Enrollment, Student } = require('../models');
 
 // GET /api/courses
 const getCourses = async (req, res) => {
   try {
     const { progId, facultyId, semester } = req.query;
+    let { deptId } = req.query;
     const where = { isActive: true };
     if (progId) where.progId = progId;
     if (facultyId) where.facultyId = facultyId;
     if (semester) where.semester = semester;
 
+    // Students are always restricted to their own department, server-side
+    if (req.user.role === 'student') {
+      const student = await Student.findOne({
+        where: { userId: req.user.userId },
+        include: [{ model: Program, as: 'major' }],
+      });
+      if (student?.major?.deptId) deptId = student.major.deptId;
+    }
+
+    const programInclude = {
+      association: 'program',
+      include: [{ association: 'department' }],
+      ...(deptId ? { where: { deptId } } : {}),
+    };
+
     const courses = await Course.findAll({
       where,
       include: [
         { association: 'faculty', include: [{ association: 'user', attributes: ['username', 'email'] }] },
-        { association: 'program', include: [{ association: 'department' }] },
+        programInclude,
       ],
       order: [['createdAt', 'DESC']],
     });

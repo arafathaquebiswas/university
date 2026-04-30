@@ -1,22 +1,29 @@
-const Department          = require('./Department');
-const Program             = require('./Program');
-const User                = require('./User');
-const Student             = require('./Student');
-const Faculty             = require('./Faculty');
-const Admin               = require('./Admin');
-const AccountsStaff       = require('./AccountsStaff');
-const Course              = require('./Course');
-const CourseGradingPolicy = require('./CourseGradingPolicy');
-const Grade               = require('./Grade');
-const Enrollment          = require('./Enrollment');
-const AttendanceRecord    = require('./AttendanceRecord');
-const Scholarship         = require('./Scholarship');
-const FinancialRecord     = require('./FinancialRecord');
-const Announcement        = require('./Announcement');
-const Notification        = require('./Notification');
-const SemesterGPA         = require('./SemesterGPA');
-const CourseMaterial      = require('./CourseMaterial');
-const ImportantDate       = require('./ImportantDate');
+const Department             = require('./Department');
+const Program                = require('./Program');
+const User                   = require('./User');
+const Student                = require('./Student');
+const Faculty                = require('./Faculty');
+const Admin                  = require('./Admin');
+const AccountsStaff          = require('./AccountsStaff');
+const Course                 = require('./Course');
+const CourseGradingPolicy    = require('./CourseGradingPolicy');
+const Grade                  = require('./Grade');
+const Enrollment             = require('./Enrollment');
+const AttendanceRecord       = require('./AttendanceRecord');
+const Scholarship            = require('./Scholarship');
+const FinancialRecord        = require('./FinancialRecord');
+const Announcement           = require('./Announcement');
+const Notification           = require('./Notification');
+const SemesterGPA            = require('./SemesterGPA');
+const CourseMaterial         = require('./CourseMaterial');
+const ImportantDate          = require('./ImportantDate');
+const Quiz                   = require('./Quiz');
+const QuizSubmission         = require('./QuizSubmission');
+const Timetable              = require('./Timetable');
+const ScholarshipApplication = require('./ScholarshipApplication');
+const InstallmentPlan        = require('./InstallmentPlan');
+const Installment            = require('./Installment');
+const AuditLog               = require('./AuditLog');
 
 // ─── Department ↔ Program ─────────────────────────────────────────────────────
 Department.hasMany(Program,  { foreignKey: 'deptId', as: 'programs' });
@@ -104,9 +111,53 @@ CourseMaterial.belongsTo(Course,  { foreignKey: 'courseId',   as: 'course' });
 User.hasMany(CourseMaterial,      { foreignKey: 'uploadedBy', as: 'uploadedMaterials' });
 CourseMaterial.belongsTo(User,    { foreignKey: 'uploadedBy', as: 'uploader' });
 
+// ─── Quiz ─────────────────────────────────────────────────────────────────────
+Course.hasMany(Quiz,         { foreignKey: 'courseId', as: 'quizzes' });
+Quiz.belongsTo(Course,       { foreignKey: 'courseId', as: 'course' });
+
+Quiz.hasMany(QuizSubmission,        { foreignKey: 'quizId', as: 'submissions' });
+QuizSubmission.belongsTo(Quiz,      { foreignKey: 'quizId', as: 'quiz' });
+
+Student.hasMany(QuizSubmission,     { foreignKey: 'studentId', as: 'quizSubmissions' });
+QuizSubmission.belongsTo(Student,   { foreignKey: 'studentId', as: 'student' });
+
+// ─── Timetable ────────────────────────────────────────────────────────────────
+Course.hasMany(Timetable,    { foreignKey: 'courseId', as: 'timetableSlots' });
+Timetable.belongsTo(Course,  { foreignKey: 'courseId', as: 'course' });
+
+// ─── ScholarshipApplication ───────────────────────────────────────────────────
+Student.hasMany(ScholarshipApplication,      { foreignKey: 'studentId',    as: 'scholarshipApplications' });
+ScholarshipApplication.belongsTo(Student,    { foreignKey: 'studentId',    as: 'student' });
+
+Scholarship.hasMany(ScholarshipApplication,  { foreignKey: 'scholarshipId', as: 'applications' });
+ScholarshipApplication.belongsTo(Scholarship,{ foreignKey: 'scholarshipId', as: 'scholarship' });
+
+User.hasMany(ScholarshipApplication,         { foreignKey: 'reviewedBy', as: 'reviewedApplications' });
+ScholarshipApplication.belongsTo(User,       { foreignKey: 'reviewedBy', as: 'reviewer' });
+
+// ─── Student registration reviewer ───────────────────────────────────────────
+User.hasMany(Student,    { foreignKey: 'reviewedBy', as: 'approvedStudents' });
+Student.belongsTo(User,  { foreignKey: 'reviewedBy', as: 'approver' });
+
+// ─── InstallmentPlan / Installment ────────────────────────────────────────────
+Student.hasMany(InstallmentPlan,      { foreignKey: 'studentId', as: 'installmentPlans' });
+InstallmentPlan.belongsTo(Student,    { foreignKey: 'studentId', as: 'student' });
+
+User.hasMany(InstallmentPlan,         { foreignKey: 'createdBy', as: 'createdPlans' });
+InstallmentPlan.belongsTo(User,       { foreignKey: 'createdBy', as: 'creator' });
+
+InstallmentPlan.hasMany(Installment,  { foreignKey: 'planId', as: 'installments' });
+Installment.belongsTo(InstallmentPlan,{ foreignKey: 'planId', as: 'plan' });
+
+// ─── AuditLog ─────────────────────────────────────────────────────────────────
+User.hasMany(AuditLog,   { foreignKey: 'userId', as: 'auditLogs' });
+AuditLog.belongsTo(User, { foreignKey: 'userId', as: 'user' });
+
 module.exports = {
   Department, Program, User, Student, Faculty, Admin, AccountsStaff,
   Course, CourseGradingPolicy, Grade, Enrollment,
   AttendanceRecord, Scholarship, FinancialRecord,
   Announcement, Notification, SemesterGPA, CourseMaterial, ImportantDate,
+  Quiz, QuizSubmission, Timetable, ScholarshipApplication,
+  InstallmentPlan, Installment, AuditLog,
 };

@@ -1,8 +1,63 @@
-const { FinancialRecord, Student, Scholarship, User, Notification, Grade, Enrollment, SemesterGPA } = require('../models');
+const { FinancialRecord, Student, Scholarship, User, Notification, Grade, Enrollment, SemesterGPA, Course } = require('../models');
 const { checkScholarship } = require('../utils/gradingEngine');
 const { Op } = require('sequelize');
 
-// POST /api/finance/invoices — generate semester fee invoice
+const COURSE_FEE   = 20000;
+const SEMESTER_FEE = 10000;
+
+// POST /api/finance/generate-semester-invoice — auto-calculate from enrollments
+const generateSemesterInvoice = async (req, res) => {
+  try {
+    const { studentId, semester, dueDate } = req.body;
+    if (!studentId || !semester)
+      return res.status(400).json({ error: 'studentId and semester are required' });
+
+    const student = await Student.findByPk(studentId, { include: [{ model: User, as: 'user' }] });
+    if (!student) return res.status(404).json({ error: 'Student not found' });
+
+    const existing = await FinancialRecord.findOne({
+      where: { studentId, semester, type: 'tuition', description: { [Op.like]: 'Semester Registration Fee%' } },
+    });
+    if (existing)
+      return res.status(409).json({ error: `Invoice already generated for ${semester}` });
+
+    const enrollments = await Enrollment.findAll({
+      where: { studentId, semester },
+      include: [{ model: Course, as: 'course' }],
+    });
+    if (!enrollments.length)
+      return res.status(400).json({ error: 'No enrollments found for this semester' });
+
+    const records = [];
+
+    records.push(await FinancialRecord.create({
+      studentId, amount: SEMESTER_FEE, type: 'tuition',
+      semester, dueDate, description: `Semester Registration Fee — ${semester}`,
+    }));
+
+    for (const enr of enrollments) {
+      records.push(await FinancialRecord.create({
+        studentId, amount: COURSE_FEE, type: 'tuition',
+        semester, dueDate,
+        description: `Course Fee: ${enr.course.title} (${enr.course.courseCode})`,
+      }));
+    }
+
+    const total = SEMESTER_FEE + enrollments.length * COURSE_FEE;
+
+    await Notification.create({
+      userId:  student.userId,
+      type:    'payment',
+      message: `Fee invoice for ${semester}: BDT ${total.toLocaleString()} — ${enrollments.length} course(s) × BDT 20,000 + BDT 10,000 semester fee. Due: ${dueDate || 'N/A'}`,
+    });
+
+    return res.status(201).json({ records, total, courseCount: enrollments.length });
+  } catch (err) {
+    return res.status(500).json({ error: 'Server error' });
+  }
+};
+
+// POST /api/finance/invoices — manual invoice (staff override)
 const generateInvoice = async (req, res) => {
   try {
     const { studentId, amount, type, semester, dueDate, description } = req.body;
@@ -172,4 +227,4 @@ const getScholarships = async (req, res) => {
   }
 };
 
-module.exports = { generateInvoice, makePayment, getMyFinancials, getStudentFinancials, getAllFinancials, applyScholarship, getScholarships };
+module.exports = { generateInvoice, generateSemesterInvoice, makePayment, getMyFinancials, getStudentFinancials, getAllFinancials, applyScholarship, getScholarships };
