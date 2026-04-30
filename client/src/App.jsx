@@ -6,7 +6,7 @@ import Layout from './components/Layout';
 
 // Public Pages
 import Home from './pages/Home/Home';
-import Navbar from './components/Navbar';
+import Announcements from './pages/Announcements/Announcements';
 import About from './pages/About/About';
 import Academics from './pages/Academics/Academics';
 import Admission from './pages/Admission/Admission';
@@ -41,13 +41,13 @@ import MyAttendance from './pages/student/MyAttendance';
 import PaymentPortal from './pages/student/PaymentPortal';
 import Notifications from './pages/student/Notifications';
 import WhatIfSimulator from './pages/student/WhatIfSimulator';
+import CourseAnnouncements from './pages/student/CourseAnnouncements';
 
 // Accounts Pages
 import AccountsDashboard from './pages/accounts/AccountsDashboard';
 import FinancialManagement from './pages/accounts/FinancialManagement';
 import GenerateInvoice from './pages/accounts/GenerateInvoice';
 import AccountsScholarships from './pages/accounts/AccountsScholarships';
-// import Academics from './pages/Academics/Academics';
 
 /**
  * Higher-order component to wrap protected routes with 
@@ -59,21 +59,6 @@ const Wrap = ({ roles, children }) => (
   </ProtectedRoute>
 );
 
-/**
- * Temporary Component for static academic pages
- */
-const StaticPage = ({ title }) => (
-  <div className="min-h-screen bg-white">
-    <Navbar />
-    <div className="max-w-7xl mx-auto py-20 px-4 text-center">
-      <h1 className="text-4xl font-bold text-blue-900">{title}</h1>
-      <p className="mt-4 text-gray-600 italic">Information regarding {title.toLowerCase()} will be updated soon.</p>
-      <div className="mt-10 h-64 w-full bg-gray-100 rounded-lg flex items-center justify-center border-2 border-dashed border-gray-300">
-        <span className="text-gray-400">Section Image/Content Placeholder</span>
-      </div>
-    </div>
-  </div>
-);
 
 export default function App() {
   return (
@@ -90,7 +75,7 @@ export default function App() {
           <Route path="/admission" element={<Admission />} />
           <Route path="/research" element={<Research />} />
           <Route path="/student-life" element={<StudentLife/>} />
-          <Route path="/news" element={<StaticPage title="News & Announcements" />} />
+          <Route path="/announcements" element={<Announcements />} />
 
           {/* ==========================================
               AUTHENTICATION ROUTES
@@ -128,6 +113,7 @@ export default function App() {
           <Route path="/student/attendance" element={<Wrap roles={['student']}><MyAttendance /></Wrap>} />
           <Route path="/student/payments" element={<Wrap roles={['student']}><PaymentPortal /></Wrap>} />
           <Route path="/student/notifications" element={<Wrap roles={['student']}><Notifications /></Wrap>} />
+          <Route path="/student/announcements" element={<Wrap roles={['student']}><CourseAnnouncements /></Wrap>} />
 
           {/* ==========================================
               ACCOUNTS ROUTES

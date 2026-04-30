@@ -37,6 +37,7 @@ const categoryColors = {
 const Home = () => {
   const [currentImage, setCurrentImage] = useState(0);
   const [importantDates, setImportantDates] = useState([]);
+  const [announcements, setAnnouncements] = useState([]);
   const navigate = useNavigate();
 
   // Fixed: Removed "Public/" from paths as Vite serves from public root
@@ -55,6 +56,7 @@ const Home = () => {
 
   useEffect(() => {
     api.get('/admin/dates').then(r => setImportantDates(r.data)).catch(() => {});
+    api.get('/public/announcements').then(r => setAnnouncements(r.data.slice(0, 3))).catch(() => {});
   }, []);
 
   return (
@@ -153,6 +155,43 @@ const Home = () => {
                   </div>
                 </div>
               ))}
+            </div>
+          </div>
+        )}
+        {/* Announcements Preview */}
+        {announcements.length > 0 && (
+          <div className="mt-20">
+            <div className="flex items-center justify-between mb-8 flex-wrap gap-4">
+              <h2 className="text-3xl font-bold text-blue-900 underline decoration-yellow-500 underline-offset-8">
+                Latest Announcements
+              </h2>
+              <button
+                onClick={() => navigate('/announcements')}
+                className="text-blue-900 font-semibold border-2 border-blue-900 px-5 py-2 rounded hover:bg-blue-900 hover:text-white transition-colors text-sm"
+              >
+                View All
+              </button>
+            </div>
+            <div className="space-y-4">
+              {announcements.map(a => (
+                <div key={a.announcementId} className="bg-white rounded-xl border border-gray-200 shadow-sm p-6 hover:shadow-md transition-shadow">
+                  <div className="flex items-start justify-between gap-4 flex-wrap">
+                    <h3 className="text-lg font-bold text-blue-900">{a.title}</h3>
+                    <span className="text-xs text-gray-400 whitespace-nowrap pt-1">
+                      {new Date(a.createdAt).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })}
+                    </span>
+                  </div>
+                  <p className="text-gray-600 mt-2 text-sm line-clamp-2">{a.content}</p>
+                </div>
+              ))}
+            </div>
+            <div className="text-center mt-6">
+              <button
+                onClick={() => navigate('/announcements')}
+                className="bg-blue-900 text-white px-8 py-3 rounded font-bold hover:bg-blue-700 transition-colors shadow-md"
+              >
+                See All Announcements
+              </button>
             </div>
           </div>
         )}

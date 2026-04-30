@@ -10,7 +10,7 @@ const Navbar = () => {
     { name: 'ADMISSION', path: '/admission' },
     { name: 'RESEARCH', path: '/research' },
     { name: 'STUDENT LIFE', path: '/student-life' },
-    { name: 'NEWS', path: '/news' }
+    { name: 'ANNOUNCEMENTS', path: '/announcements' }
   ];
 
   return (

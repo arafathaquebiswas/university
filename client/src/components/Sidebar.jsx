@@ -29,6 +29,7 @@ const navConfig = {
     { to: '/student/grades', label: 'My Grades', icon: ChartBarIcon },
     { to: '/student/attendance', label: 'Attendance', icon: ClipboardDocumentCheckIcon },
     { to: '/student/payments', label: 'Payments', icon: CreditCardIcon },
+    { to: '/student/announcements', label: 'Announcements', icon: BookOpenIcon },
     { to: '/student/notifications', label: 'Notifications', icon: BellIcon },
   ],
   accounts_staff: [

@@ -12,6 +12,15 @@ export default function ManageAnnouncements() {
 
   useEffect(() => { load(); }, []);
 
+  const handleDelete = async (id) => {
+    if (!window.confirm('Delete this announcement? This cannot be undone.')) return;
+    try {
+      await api.delete(`/announcements/${id}`);
+      toast.success('Announcement deleted');
+      load();
+    } catch (err) { toast.error('Failed to delete'); }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
@@ -85,7 +94,7 @@ export default function ManageAnnouncements() {
         ) : announcements.map(a => (
           <div key={a.announcementId} className="card">
             <div className="flex items-start justify-between gap-4">
-              <div className="flex-1">
+              <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 flex-wrap">
                   <h3 className="font-semibold text-gray-800">{a.title}</h3>
                   {a.isGlobal && <span className="badge-blue text-xs">Global</span>}
@@ -96,6 +105,12 @@ export default function ManageAnnouncements() {
                 </p>
                 <p className="text-sm text-gray-700 mt-2 whitespace-pre-line">{a.content}</p>
               </div>
+              <button
+                onClick={() => handleDelete(a.announcementId)}
+                className="flex-shrink-0 text-sm text-red-600 hover:text-red-800 border border-red-200 hover:border-red-400 px-3 py-1 rounded transition-colors"
+              >
+                Delete
+              </button>
             </div>
           </div>
         ))}

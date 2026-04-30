@@ -108,14 +108,21 @@ const getMyAttendance = async (req, res) => {
     const student = await Student.findOne({ where: { userId: req.user.userId } });
     if (!student) return res.status(404).json({ error: 'Student profile not found' });
 
-    // Active enrollments
     const enrollments = await Enrollment.findAll({
       where: { studentId: student.studentId, status: { [Op.ne]: 'dropped' } },
       include: [{ model: Course, as: 'course', attributes: ['courseId','title','courseCode','semester'] }],
     });
 
+    // Deduplicate: one entry per course (keeps first occurrence)
+    const seen = new Set();
+    const uniqueEnrollments = enrollments.filter(en => {
+      if (seen.has(en.courseId)) return false;
+      seen.add(en.courseId);
+      return true;
+    });
+
     const result = [];
-    for (const en of enrollments) {
+    for (const en of uniqueEnrollments) {
       const cid = en.courseId;
 
       const totalClasses = await AttendanceRecord.count({
@@ -124,17 +131,21 @@ const getMyAttendance = async (req, res) => {
         col: 'date',
       });
 
-      const attended = await AttendanceRecord.count({
-        where: { studentId: student.studentId, courseId: cid, status: { [Op.in]: ['present', 'late'] } },
+      const present = await AttendanceRecord.count({
+        where: { studentId: student.studentId, courseId: cid, status: 'present' },
+      });
+
+      const late = await AttendanceRecord.count({
+        where: { studentId: student.studentId, courseId: cid, status: 'late' },
       });
 
       const absent = await AttendanceRecord.count({
         where: { studentId: student.studentId, courseId: cid, status: 'absent' },
       });
 
+      const attended = present + late;
       const pct = calcAttendancePct(attended, totalClasses);
 
-      // Per-date records
       const records = await AttendanceRecord.findAll({
         where: { studentId: student.studentId, courseId: cid },
         order: [['date', 'DESC']],
@@ -143,15 +154,16 @@ const getMyAttendance = async (req, res) => {
 
       result.push({
         course: en.course,
-        semester: en.semester,
         totalClasses,
+        present,
+        late,
         attended,
         absent,
         missed: totalClasses - attended,
         percentage: pct,
         status: attendanceStatus(pct),
         records,
-        warning: pct < 75,
+        warning: pct < 75 && totalClasses > 0,
       });
     }
 
@@ -164,13 +176,8 @@ const getMyAttendance = async (req, res) => {
 // GET /api/attendance/student/:studentId — admin/faculty view
 const getStudentAttendance = async (req, res) => {
   try {
-    req.user = { userId: -1 }; // bypass userId check
     const student = await Student.findByPk(req.params.studentId);
     if (!student) return res.status(404).json({ error: 'Not found' });
-
-    const tmp = { ...req, user: { userId: student.userId } };
-    // Reuse my-attendance logic
-    const spy = { json: (d) => res.json(d), status: (c) => ({ json: (d) => res.status(c).json(d) }) };
     return getMyAttendance({ ...req, user: { userId: student.userId } }, res);
   } catch (err) {
     return res.status(500).json({ error: 'Server error' });

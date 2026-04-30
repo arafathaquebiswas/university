@@ -62,4 +62,46 @@ const getGlobalAnnouncements = async (req, res) => {
   }
 };
 
-module.exports = { createAnnouncement, getAnnouncements, getGlobalAnnouncements };
+// DELETE /api/announcements/:id
+const deleteAnnouncement = async (req, res) => {
+  try {
+    const ann = await Announcement.findByPk(req.params.id);
+    if (!ann) return res.status(404).json({ error: 'Announcement not found' });
+    if (req.user.role !== 'admin' && ann.createdBy !== req.user.userId) {
+      return res.status(403).json({ error: 'Forbidden' });
+    }
+    await ann.destroy();
+    return res.json({ message: 'Deleted' });
+  } catch (err) {
+    return res.status(500).json({ error: 'Server error' });
+  }
+};
+
+// GET /api/announcements/my-courses (student: only their enrolled courses)
+const getMyCoursesAnnouncements = async (req, res) => {
+  try {
+    const student = await Student.findOne({ where: { userId: req.user.userId } });
+    if (!student) return res.status(404).json({ error: 'Student profile not found' });
+
+    const enrollments = await Enrollment.findAll({
+      where: { studentId: student.studentId, status: 'active' },
+    });
+
+    const courseIds = enrollments.map(e => e.courseId);
+    if (courseIds.length === 0) return res.json([]);
+
+    const announcements = await Announcement.findAll({
+      where: { courseId: courseIds },
+      include: [
+        { association: 'creator', attributes: ['username', 'role'] },
+        { association: 'course', attributes: ['courseId', 'courseCode', 'title'] },
+      ],
+      order: [['createdAt', 'DESC']],
+    });
+    return res.json(announcements);
+  } catch (err) {
+    return res.status(500).json({ error: 'Server error' });
+  }
+};
+
+module.exports = { createAnnouncement, getAnnouncements, getGlobalAnnouncements, deleteAnnouncement, getMyCoursesAnnouncements };
