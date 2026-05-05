@@ -132,11 +132,23 @@ const getMyEnrollments = async (req, res) => {
     const enrollments = await Enrollment.findAll({
       where: { studentId: student.studentId, status: { [Op.ne]: 'dropped' } },
       include: [
-        { association: 'course', include: [
-          { association: 'faculty', include: [{ association: 'user', attributes: ['username'] }] },
-          { association: 'program' },
-        ]},
-        { association: 'grade' },
+        {
+          model: require('../models').Course,
+          as: 'course',
+          include: [
+            {
+              model: require('../models').Faculty,
+              as: 'faculty',
+              include: [
+                {
+                  model: require('../models').User,
+                  as: 'user',
+                  attributes: ['username']
+                }
+              ]
+            }
+          ]
+        }
       ],
       order: [['semester', 'DESC']],
     });
