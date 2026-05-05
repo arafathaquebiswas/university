@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { BookOpenIcon, ClipboardDocumentCheckIcon, ChartBarIcon, BellIcon } from '@heroicons/react/24/outline';
+import { AcademicCapIcon, BookOpenIcon, ClipboardDocumentCheckIcon, ChartBarIcon, BellIcon } from '@heroicons/react/24/outline';
 import api from '../../api/axios';
 import { useAuth } from '../../context/AuthContext';
 import StatCard from '../../components/StatCard';
@@ -24,6 +24,7 @@ export default function FacultyDashboard() {
 
   const quickActions = [
     { to: '/faculty/courses', label: 'My Courses', icon: BookOpenIcon },
+    { to: '/faculty/quizzes', label: 'Quizzes', icon: AcademicCapIcon },
     { to: '/faculty/attendance', label: 'Mark Attendance', icon: ClipboardDocumentCheckIcon },
     { to: '/faculty/grades', label: 'Submit Grades', icon: ChartBarIcon },
     { to: '/faculty/announcements', label: 'Announcements', icon: BellIcon },
@@ -40,7 +41,7 @@ export default function FacultyDashboard() {
         <StatCard title="My Courses" value={courses.length} icon={BookOpenIcon} color="blue" />
         <StatCard title="Students" value={totalStudents} icon={ChartBarIcon} color="green" />
         <StatCard title="Announcements" value={announcements.length} icon={BellIcon} color="yellow" />
-        <StatCard title="Pending Grades" value="—" icon={ClipboardDocumentCheckIcon} color="red" sub="Submit grades for completed courses" />
+        {/* <StatCard title="Pending Grades" value="—" icon={ClipboardDocumentCheckIcon} color="red" sub="Submit grades for completed courses" />  */}
       </div>
 
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">

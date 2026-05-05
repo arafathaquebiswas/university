@@ -1,9 +1,10 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { ClipboardDocumentListIcon, ChartBarIcon, ClipboardDocumentCheckIcon, CreditCardIcon } from '@heroicons/react/24/outline';
+import { AcademicCapIcon, ClipboardDocumentListIcon, ChartBarIcon, ClipboardDocumentCheckIcon, CreditCardIcon } from '@heroicons/react/24/outline';
 import api from '../../api/axios';
 import { useAuth } from '../../context/AuthContext';
 import StatCard from '../../components/StatCard';
+import toast from 'react-hot-toast';
 
 export default function StudentDashboard() {
   const { user } = useAuth();
@@ -11,12 +12,41 @@ export default function StudentDashboard() {
   const [enrollments, setEnrollments] = useState([]);
   const [notifications, setNotifications] = useState([]);
   const [financials, setFinancials] = useState(null);
+  const [materials, setMaterials] = useState([]);
+  const [downloadingId, setDownloadingId] = useState(null);
+
+  const handleDownloadMaterial = async (materialId, originalName) => {
+    try {
+      setDownloadingId(materialId);
+      const response = await api.get(`/materials/download/${materialId}`, {
+        responseType: 'blob',
+      });
+
+      const downloadName = originalName || 'material';
+      const blob = new Blob([response.data], {
+        type: response.data.type || 'application/octet-stream',
+      });
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = downloadName;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      window.URL.revokeObjectURL(url);
+    } catch (err) {
+      toast.error(err.response?.data?.error || 'Download failed');
+    } finally {
+      setDownloadingId(null);
+    }
+  };
 
   useEffect(() => {
     api.get('/auth/me').then(r => setProfile(r.data)).catch(() => {});
     api.get('/enrollments/my').then(r => setEnrollments(r.data)).catch(() => {});
     api.get('/notifications/my').then(r => setNotifications(r.data.notifications?.slice(0, 4) || [])).catch(() => {});
     api.get('/finance/my').then(r => setFinancials(r.data)).catch(() => {});
+    api.get('/materials/my').then(r => setMaterials(r.data)).catch(() => {});
   }, []);
 
   const activeCourses = enrollments.filter(e => e.status === 'active').length;
@@ -25,6 +55,7 @@ export default function StudentDashboard() {
   const quickLinks = [
     { to: '/student/enroll', label: 'Enrollment', icon: ClipboardDocumentListIcon, color: 'blue' },
     { to: '/student/grades', label: 'My Grades', icon: ChartBarIcon, color: 'green' },
+    { to: '/student/quizzes', label: 'Quizzes', icon: AcademicCapIcon, color: 'purple' },
     { to: '/student/attendance', label: 'Attendance', icon: ClipboardDocumentCheckIcon, color: 'yellow' },
     { to: '/student/payments', label: 'Payments', icon: CreditCardIcon, color: 'red' },
   ];
@@ -58,7 +89,7 @@ export default function StudentDashboard() {
         ))}
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="card">
           <h2 className="text-lg font-semibold mb-4">Current Courses</h2>
           {enrollments.filter(e => e.status === 'active').length === 0 ? (
@@ -96,6 +127,37 @@ export default function StudentDashboard() {
                 </li>
               ))}
             </ul>
+          )}
+        </div>
+
+        <div className="card">
+          <h2 className="text-lg font-semibold mb-4">Course Materials</h2>
+          {materials.length === 0 ? (
+            <p className="text-sm text-gray-400">No materials available</p>
+          ) : (
+            <div className="space-y-3">
+              {materials.slice(0, 5).map(m => (
+                <div key={m.materialId} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium text-gray-800 truncate">{m.title}</p>
+                    <p className="text-xs text-gray-500">
+                      {enrollments.find(e => e.courseId === m.courseId)?.course?.title || `Course ${m.courseId}`}
+                    </p>
+                    <p className="text-xs text-gray-400">{new Date(m.createdAt).toLocaleDateString()}</p>
+                  </div>
+                  <button
+                    onClick={() => handleDownloadMaterial(m.materialId, m.originalName)}
+                    disabled={downloadingId === m.materialId}
+                    className="ml-2 px-3 py-1 text-xs bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50"
+                  >
+                    {downloadingId === m.materialId ? 'Downloading...' : 'Download'}
+                  </button>
+                </div>
+              ))}
+              {materials.length > 5 && (
+                <p className="text-xs text-gray-500 text-center">And {materials.length - 5} more...</p>
+              )}
+            </div>
           )}
         </div>
       </div>

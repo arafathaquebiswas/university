@@ -1,6 +1,6 @@
 const path = require('path');
 const fs   = require('fs');
-const { CourseMaterial, Course, Faculty } = require('../models');
+const { CourseMaterial, Course, Faculty, Student, Enrollment } = require('../models');
 const { UPLOAD_DIR } = require('../middleware/upload');
 
 // POST /api/materials  — faculty uploads a file
@@ -56,6 +56,31 @@ const getCourseMaterials = async (req, res) => {
   }
 };
 
+// GET /api/materials/my  — list all materials for student's enrolled courses
+const getMyMaterials = async (req, res) => {
+  try {
+    const student = await Student.findOne({ where: { userId: req.user.userId } });
+    if (!student) return res.status(404).json({ error: 'Student profile not found' });
+
+    const enrollments = await Enrollment.findAll({
+      where: { studentId: student.studentId },
+      attributes: ['courseId'],
+    });
+    const courseIds = enrollments.map(e => e.courseId);
+
+    if (courseIds.length === 0) return res.json([]);
+
+    const materials = await CourseMaterial.findAll({
+      where: { courseId: courseIds },
+      order: [['createdAt', 'DESC']],
+    });
+    return res.json(materials);
+  } catch (err) {
+    console.error('getMyMaterials:', err);
+    return res.status(500).json({ error: 'Server error' });
+  }
+};
+
 // GET /api/materials/download/:materialId  — download/stream file
 const downloadMaterial = async (req, res) => {
   try {
@@ -95,4 +120,4 @@ const deleteMaterial = async (req, res) => {
   }
 };
 
-module.exports = { uploadMaterial, getCourseMaterials, downloadMaterial, deleteMaterial };
+module.exports = { uploadMaterial, getCourseMaterials, getMyMaterials, downloadMaterial, deleteMaterial };

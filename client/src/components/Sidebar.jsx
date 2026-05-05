@@ -19,6 +19,7 @@ const navConfig = {
   faculty: [
     { to: '/faculty', label: 'Dashboard', icon: HomeIcon },
     { to: '/faculty/courses', label: 'My Courses', icon: BookOpenIcon },
+    { to: '/faculty/quizzes', label: 'Quizzes', icon: AcademicCapIcon },
     { to: '/faculty/attendance', label: 'Attendance', icon: ClipboardDocumentCheckIcon },
     { to: '/faculty/grades', label: 'Grades', icon: ChartBarIcon },
     { to: '/faculty/announcements', label: 'Announcements', icon: BellIcon },
@@ -27,6 +28,7 @@ const navConfig = {
     { to: '/student', label: 'Dashboard', icon: HomeIcon },
     { to: '/student/enroll', label: 'Enrollment', icon: ClipboardDocumentListIcon },
     { to: '/student/grades', label: 'My Grades', icon: ChartBarIcon },
+    { to: '/student/quizzes', label: 'Quizzes', icon: AcademicCapIcon },
     { to: '/student/attendance', label: 'Attendance', icon: ClipboardDocumentCheckIcon },
     { to: '/student/payments', label: 'Payments', icon: CreditCardIcon },
     { to: '/student/announcements', label: 'Announcements', icon: BookOpenIcon },

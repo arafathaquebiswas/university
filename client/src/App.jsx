@@ -31,12 +31,14 @@ import FacultyDashboard from './pages/faculty/FacultyDashboard';
 import FacultyCourses from './pages/faculty/FacultyCourses';
 import MarkAttendance from './pages/faculty/MarkAttendance';
 import GradeManagement from './pages/faculty/GradeManagement';
+import QuizManagement from './pages/faculty/QuizManagement';
 import FacultyAnnouncements from './pages/faculty/FacultyAnnouncements';
 
 // Student Pages
 import StudentDashboard from './pages/student/StudentDashboard';
 import CourseEnrollment from './pages/student/CourseEnrollment';
 import MyGrades from './pages/student/MyGrades';
+import QuizPortal from './pages/student/QuizPortal';
 import MyAttendance from './pages/student/MyAttendance';
 import PaymentPortal from './pages/student/PaymentPortal';
 import Notifications from './pages/student/Notifications';
@@ -99,6 +101,7 @@ export default function App() {
               ========================================== */}
           <Route path="/faculty" element={<Wrap roles={['faculty']}><FacultyDashboard /></Wrap>} />
           <Route path="/faculty/courses" element={<Wrap roles={['faculty']}><FacultyCourses /></Wrap>} />
+          <Route path="/faculty/quizzes" element={<Wrap roles={['faculty']}><QuizManagement /></Wrap>} />
           <Route path="/faculty/attendance" element={<Wrap roles={['faculty']}><MarkAttendance /></Wrap>} />
           <Route path="/faculty/grades" element={<Wrap roles={['faculty']}><GradeManagement /></Wrap>} />
           <Route path="/faculty/announcements" element={<Wrap roles={['faculty']}><FacultyAnnouncements /></Wrap>} />
@@ -109,6 +112,7 @@ export default function App() {
           <Route path="/student" element={<Wrap roles={['student']}><StudentDashboard /></Wrap>} />
           <Route path="/student/enroll" element={<Wrap roles={['student']}><CourseEnrollment /></Wrap>} />
           <Route path="/student/grades" element={<Wrap roles={['student']}><MyGrades /></Wrap>} />
+          <Route path="/student/quizzes" element={<Wrap roles={['student']}><QuizPortal /></Wrap>} />
           <Route path="/student/whatif" element={<Wrap roles={['student']}><WhatIfSimulator /></Wrap>} />
           <Route path="/student/attendance" element={<Wrap roles={['student']}><MyAttendance /></Wrap>} />
           <Route path="/student/payments" element={<Wrap roles={['student']}><PaymentPortal /></Wrap>} />

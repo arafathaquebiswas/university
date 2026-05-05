@@ -18,6 +18,7 @@ const notificationRoutes = require('./routes/notifications');
 const adminRoutes = require('./routes/admin');
 const announcementRoutes = require('./routes/announcements');
 const materialRoutes = require('./routes/materials');
+const quizRoutes = require('./routes/quizzes');
 
 const app = express();
 
@@ -42,6 +43,7 @@ app.use('/api/notifications', notificationRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/announcements', announcementRoutes);
 app.use('/api/materials', materialRoutes);
+app.use('/api/quizzes', quizRoutes);
 
 // Health check
 app.get('/api/health', (req, res) => res.json({ status: 'ok', timestamp: new Date() }));
@@ -54,7 +56,7 @@ app.use((err, req, res, next) => {
 
 const PORT = process.env.PORT || 5001;
 
-sequelize.sync({ alter: false })
+sequelize.sync({ alter: process.env.NODE_ENV !== 'production' })
   .then(() => {
     console.log('Database connected & synced');
     app.listen(PORT, () => console.log(`Server running on port ${PORT}`));

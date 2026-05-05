@@ -33,6 +33,8 @@ function CourseMaterials({ courseId }) {
 
   useEffect(() => { load(); }, [courseId]);
 
+  const [downloadingId, setDownloadingId] = useState(null);
+
   const handleUpload = async (e) => {
     e.preventDefault();
     if (!file) return toast.error('Please select a file');
@@ -71,6 +73,32 @@ function CourseMaterials({ courseId }) {
 
   const downloadUrl = (materialId) =>
     `${api.defaults.baseURL}/materials/download/${materialId}`;
+
+  const handleDownloadMaterial = async (materialId, originalName) => {
+    try {
+      setDownloadingId(materialId);
+      const response = await api.get(`/materials/download/${materialId}`, {
+        responseType: 'blob',
+      });
+
+      const downloadName = originalName || 'material';
+      const blob = new Blob([response.data], {
+        type: response.data.type || 'application/octet-stream',
+      });
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = downloadName;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      window.URL.revokeObjectURL(url);
+    } catch (err) {
+      toast.error(err.response?.data?.error || 'Download failed');
+    } finally {
+      setDownloadingId(null);
+    }
+  };
 
   return (
     <div className="mt-4 border-t pt-4 space-y-4">
@@ -122,15 +150,16 @@ function CourseMaterials({ courseId }) {
                 </div>
               </div>
               <div className="flex items-center gap-3 flex-shrink-0 ml-3">
-                <a
-                  href={downloadUrl(m.materialId)}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="text-xs text-blue-600 hover:underline"
-                >
-                  Download
-                </a>
                 <button
+                  type="button"
+                  onClick={() => handleDownloadMaterial(m.materialId, m.originalName)}
+                  disabled={downloadingId === m.materialId}
+                  className="text-xs text-blue-600 hover:underline disabled:text-gray-400 disabled:hover:text-gray-400"
+                >
+                  {downloadingId === m.materialId ? 'Downloading…' : 'Download'}
+                </button>
+                <button
+                  type="button"
                   onClick={() => handleDelete(m.materialId, m.originalName)}
                   className="text-xs text-red-500 hover:text-red-700"
                 >

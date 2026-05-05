@@ -1,5 +1,5 @@
 const router  = require('express').Router();
-const { uploadMaterial, getCourseMaterials, downloadMaterial, deleteMaterial } = require('../controllers/materialController');
+const { uploadMaterial, getCourseMaterials, getMyMaterials, downloadMaterial, deleteMaterial } = require('../controllers/materialController');
 const { authenticate } = require('../middleware/auth');
 const { authorize }    = require('../middleware/roleCheck');
 const { upload }       = require('../middleware/upload');
@@ -20,6 +20,9 @@ router.post(
 
 // List materials for a course — any authenticated user
 router.get('/course/:courseId', authenticate, getCourseMaterials);
+
+// List all materials for student's enrolled courses — students only
+router.get('/my', authenticate, authorize('student'), getMyMaterials);
 
 // Download a file — any authenticated user
 router.get('/download/:materialId', authenticate, downloadMaterial);
