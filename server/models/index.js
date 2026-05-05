@@ -19,6 +19,8 @@ const CourseMaterial         = require('./CourseMaterial');
 const ImportantDate          = require('./ImportantDate');
 const Quiz                   = require('./Quiz');
 const QuizSubmission         = require('./QuizSubmission');
+const QuizQuestion           = require('./QuizQuestion');
+const QuizAttempt            = require('./QuizAttempt');
 const Timetable              = require('./Timetable');
 const ScholarshipApplication = require('./ScholarshipApplication');
 const InstallmentPlan        = require('./InstallmentPlan');
@@ -121,6 +123,18 @@ QuizSubmission.belongsTo(Quiz,      { foreignKey: 'quizId', as: 'quiz' });
 Student.hasMany(QuizSubmission,     { foreignKey: 'studentId', as: 'quizSubmissions' });
 QuizSubmission.belongsTo(Student,   { foreignKey: 'studentId', as: 'student' });
 
+Quiz.hasMany(QuizQuestion,          { foreignKey: 'quizId', as: 'questions' });
+QuizQuestion.belongsTo(Quiz,        { foreignKey: 'quizId', as: 'quiz' });
+
+Quiz.hasMany(QuizAttempt,           { foreignKey: 'quizId', as: 'attempts' });
+QuizAttempt.belongsTo(Quiz,         { foreignKey: 'quizId', as: 'quiz' });
+
+Student.hasMany(QuizAttempt,        { foreignKey: 'studentId', as: 'quizAttempts' });
+QuizAttempt.belongsTo(Student,      { foreignKey: 'studentId', as: 'student' });
+
+User.hasMany(QuizAttempt,           { foreignKey: 'gradedBy', as: 'gradedQuizAttempts' });
+QuizAttempt.belongsTo(User,         { foreignKey: 'gradedBy', as: 'grader' });
+
 // ─── Timetable ────────────────────────────────────────────────────────────────
 Course.hasMany(Timetable,    { foreignKey: 'courseId', as: 'timetableSlots' });
 Timetable.belongsTo(Course,  { foreignKey: 'courseId', as: 'course' });
@@ -158,6 +172,6 @@ module.exports = {
   Course, CourseGradingPolicy, Grade, Enrollment,
   AttendanceRecord, Scholarship, FinancialRecord,
   Announcement, Notification, SemesterGPA, CourseMaterial, ImportantDate,
-  Quiz, QuizSubmission, Timetable, ScholarshipApplication,
+  Quiz, QuizSubmission, QuizQuestion, QuizAttempt, Timetable, ScholarshipApplication,
   InstallmentPlan, Installment, AuditLog,
 };
