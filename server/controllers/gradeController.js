@@ -490,34 +490,6 @@ const downloadGradeSheet = async (req, res) => {
       drawTableRow(COLS, ['No enrollment records found.', '', '', '', '', '', '']);
     }
 
-    y += 18;
-
-    // ── Semester GPA Summary table ─────────────────────────────────────────────
-    if (semesterGPAs.length > 0) {
-      doc.font('Helvetica-Bold').fontSize(9.5).fillColor('#1e3a8a')
-         .text('SEMESTER GPA SUMMARY', L, y);
-      y += 14;
-
-      const GCOLS = [
-        { x: L,    w: 118, label: 'Semester',           align: 'left'   },
-        { x: 168,  w: 80,  label: 'Semester GPA',       align: 'center' },
-        { x: 248,  w: 80,  label: 'Cumulative GPA',     align: 'center' },
-        { x: 328,  w: 110, label: 'Credits Attempted',  align: 'center' },
-        { x: 438,  w: 107, label: 'Credits Earned',     align: 'center' },
-      ];
-
-      drawTableRow(GCOLS, GCOLS.map(c => c.label), { bg: '#1e3a8a', textColor: 'white', bold: true });
-      semesterGPAs.forEach((s, i) => {
-        drawTableRow(GCOLS, [
-          s.semester,
-          parseFloat(s.semesterGPA).toFixed(2),
-          parseFloat(s.cumulativeGPA).toFixed(2),
-          String(s.creditsAttempted),
-          String(s.creditsEarned),
-        ], { bg: i % 2 === 0 ? '#f8fafc' : 'white' });
-      });
-    }
-
     drawFooter();
     doc.end();
   } catch (err) {

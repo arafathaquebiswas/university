@@ -124,24 +124,15 @@ async function seed() {
   };
 
   // ── Enrollments + Grades ──────────────────────────────────────────────────────
-  // ali_khan: CSE101, CSE201, CSE401 (3 courses)
-  const [e1, e2, e3] = await Enrollment.bulkCreate([
+  // ali_khan: CSE101, CSE201
+  const [e1, e2] = await Enrollment.bulkCreate([
     { studentId:stu1.studentId, courseId:c1.courseId, semester:'Spring 2025', status:'completed', attendancePercentage:92.5 },
     { studentId:stu1.studentId, courseId:c2.courseId, semester:'Spring 2025', status:'completed', attendancePercentage:88.0 },
-    { studentId:stu1.studentId, courseId:c5.courseId, semester:'Spring 2025', status:'active',    attendancePercentage:95.0 },
   ]);
   // CSE101: quizzes [9,8,7,10] → drop 7, lab present
   await makeGrade(e1.enrollId, c1.courseId, { quizScores:[9,8,7,10], midtermScore:75, finalScore:82, labScore:88 });
   // CSE201: quizzes [10,9,8,7] → drop 7
   await makeGrade(e2.enrollId, c2.courseId, { quizScores:[10,9,8,7], midtermScore:80, finalScore:88 });
-  // CSE401: only midterm entered so far (in-progress)
-  await Grade.create({
-    enrollId:e3.enrollId, quizScores:[8,9,7], quizMaxPerItem:10, totalQuizzes:3,
-    midtermScore:78, hasLab:false,
-    quizAverage:90, droppedQuizIdx:2,
-    quizWeight:0.20, midtermWeight:0.30, finalWeight:0.50, labWeight:0.00,
-    isFinalized:false,
-  });
 
   // sara_ahmed: CSE101, CSE301, CSE201
   const [e4, e5, e6] = await Enrollment.bulkCreate([
@@ -217,12 +208,11 @@ async function seed() {
   const SEMESTER_FEE = 10000;
   const DUE = '2025-01-15';
 
-  // ali_khan: 3 courses (CSE101, CSE201, CSE401) → 70,000 — paid
+  // ali_khan: 2 courses (CSE101, CSE201) → 50,000 — paid
   await FinancialRecord.bulkCreate([
     { studentId:stu1.studentId, amount:SEMESTER_FEE, type:'tuition', status:'paid', semester:'Spring 2025', dueDate:DUE, paymentDate:'2025-01-10', description:'Semester Registration Fee — Spring 2025' },
     { studentId:stu1.studentId, amount:COURSE_FEE,   type:'tuition', status:'paid', semester:'Spring 2025', dueDate:DUE, paymentDate:'2025-01-10', description:'Course Fee: Introduction to Programming (CSE101)' },
     { studentId:stu1.studentId, amount:COURSE_FEE,   type:'tuition', status:'paid', semester:'Spring 2025', dueDate:DUE, paymentDate:'2025-01-10', description:'Course Fee: Data Structures & Algorithms (CSE201)' },
-    { studentId:stu1.studentId, amount:COURSE_FEE,   type:'tuition', status:'paid', semester:'Spring 2025', dueDate:DUE, paymentDate:'2025-01-10', description:'Course Fee: Machine Learning (CSE401)' },
   ]);
 
   // sara_ahmed: 3 courses (CSE101, CSE301, CSE201) → 70,000 — pending
