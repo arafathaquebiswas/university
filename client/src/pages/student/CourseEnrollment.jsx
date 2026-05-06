@@ -19,12 +19,14 @@ export default function CourseEnrollment() {
   };
   useEffect(() => { load(); }, [semester]);
 
-  // Currently active enrollments
-  const enrolledIds = new Set(myEnrollments.filter(e => e.status === 'active').map(e => e.courseId));
+  // Active enrollments in the currently selected semester
+  const enrolledIds = new Set(
+    myEnrollments.filter(e => e.status === 'active' && e.semester === semester).map(e => e.courseId)
+  );
 
-  // Courses taken in any previous semester (completed, dropped, withdrawn)
+  // Courses taken in any other semester (for re-enrollment confirmation)
   const previouslyTakenIds = new Set(
-    myEnrollments.filter(e => e.status !== 'active').map(e => e.courseId)
+    myEnrollments.filter(e => e.semester !== semester).map(e => e.courseId)
   );
 
   const handleEnroll = async (courseId) => {
@@ -42,7 +44,7 @@ export default function CourseEnrollment() {
   const handleEnrollClick = (course) => {
     if (previouslyTakenIds.has(course.courseId)) {
       // Find the past enrollment record to show the semester
-      const past = myEnrollments.find(e => e.courseId === course.courseId && e.status !== 'active');
+      const past = myEnrollments.find(e => e.courseId === course.courseId && e.semester !== semester);
       setConfirmCourse({ ...course, pastSemester: past?.semester, pastStatus: past?.status });
     } else {
       handleEnroll(course.courseId);

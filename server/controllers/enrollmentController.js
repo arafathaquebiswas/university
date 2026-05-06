@@ -22,9 +22,9 @@ const enroll = async (req, res) => {
     if (enrolled >= course.maxCapacity)
       return res.status(409).json({ error: 'Course is full' });
 
-    // No duplicates
+    // No duplicates for active enrollments
     const exists = await Enrollment.findOne({
-      where: { studentId: student.studentId, courseId, semester },
+      where: { studentId: student.studentId, courseId, semester, status: 'active' },
     });
     if (exists) return res.status(409).json({ error: 'Already enrolled in this course' });
 
