@@ -28,14 +28,14 @@ const enroll = async (req, res) => {
     });
     if (exists) return res.status(409).json({ error: 'Already enrolled in this course' });
 
-    // If a dropped/withdrawn record exists for this semester, reactivate it instead of inserting
-    const dropped = await Enrollment.findOne({
-      where: { studentId: student.studentId, courseId, semester, status: { [Op.in]: ['dropped', 'withdrawn'] } },
+    // If any prior record exists for this semester (dropped/withdrawn/completed), reactivate it
+    const prior = await Enrollment.findOne({
+      where: { studentId: student.studentId, courseId, semester },
     });
     let enrollment;
-    if (dropped) {
-      await dropped.update({ status: 'active' });
-      enrollment = dropped;
+    if (prior) {
+      await prior.update({ status: 'active' });
+      enrollment = prior;
     } else {
       enrollment = await Enrollment.create({ studentId: student.studentId, courseId, semester });
     }
@@ -78,7 +78,8 @@ const enroll = async (req, res) => {
 
     return res.status(201).json(enrollment);
   } catch (err) {
-    return res.status(500).json({ error: 'Server error' });
+    console.error('[enroll]', err);
+    return res.status(500).json({ error: err.message || 'Server error' });
   }
 };
 
