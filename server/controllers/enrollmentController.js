@@ -28,7 +28,17 @@ const enroll = async (req, res) => {
     });
     if (exists) return res.status(409).json({ error: 'Already enrolled in this course' });
 
-    const enrollment = await Enrollment.create({ studentId: student.studentId, courseId, semester });
+    // If a dropped/withdrawn record exists for this semester, reactivate it instead of inserting
+    const dropped = await Enrollment.findOne({
+      where: { studentId: student.studentId, courseId, semester, status: { [Op.in]: ['dropped', 'withdrawn'] } },
+    });
+    let enrollment;
+    if (dropped) {
+      await dropped.update({ status: 'active' });
+      enrollment = dropped;
+    } else {
+      enrollment = await Enrollment.create({ studentId: student.studentId, courseId, semester });
+    }
 
     // Create semester registration fee if not already generated for this semester
     const semFeeExists = await FinancialRecord.findOne({
