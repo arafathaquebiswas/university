@@ -1,0 +1,96 @@
+Academic Management System Requirements Specification
+
+Functional Requirements
+
+Admin :
+Admin can log into the system
+Admin can add, edit, and delete departments
+Admin can add, edit, and delete academic programs
+Admin can add, edit, and delete courses
+Admin can assign faculty members to courses
+Admin can create user accounts for any role (student, faculty, accounts staff)
+Admin can delete student and faculty accounts
+Admin can manage scholarships (create and update)
+Admin can post global announcements visible to all users
+Admin can view a system-wide analytics dashboard
+
+Faculty :
+Faculty can log into the system
+Faculty can view their assigned courses
+Faculty can view students enrolled in their courses
+Faculty can submit and update student marks (quiz, midterm, final, lab)
+Faculty can set a per-course grading policy (quiz / midterm / final / lab weights)
+Faculty can mark class attendance per session (present / absent / late / excused)
+Faculty can create, edit, and delete quizzes (MCQ, true/false, short-answer types)
+Faculty can manually grade short-answer quiz responses
+Faculty can upload course materials (PDF, Word, PowerPoint, images — up to 20 MB)
+Faculty can post course-specific announcements
+
+Student :
+Student can register and log into the system
+Student can browse available courses and enroll (subject to seat capacity)
+Student can drop an enrolled course
+Student can view current and completed courses
+Student can view finalized grades, letter grades, and cumulative CGPA
+Student can download an official grade sheet as a PDF
+Student can use the What-If Simulator to predict their final grade before the exam
+Student can take published quizzes and view their attempt results
+Student can view course materials uploaded by faculty
+Student can track their attendance percentage per course
+Student can view fee invoices and pay semester and course fees
+Student can apply for a scholarship (system checks GPA eligibility automatically)
+Student can receive and read in-app notifications
+
+Accounts Staff :
+Accounts staff can log into the system
+Accounts staff can generate individual invoices for a specific student
+Accounts staff can view and filter all financial records across the institution
+Accounts staff can mark payment records as paid and record transaction references
+Accounts staff can manage scholarship applications and disbursements
+Accounts staff can apply a 5% overdue fine to payments past their due date
+
+
+Non-Functional Requirements
+
+Security :
+System must authenticate users via JWT tokens before granting access to any protected resource
+JWT tokens must expire after 7 days; the client discards the token on logout
+All passwords must be hashed using bcryptjs with 12 salt rounds — plain-text passwords are never stored
+System must enforce role-based access control across all API endpoints (Admin, Faculty, Student, Accounts Staff, Library Staff)
+System must return 401 Unauthorized for expired or missing tokens and 403 Forbidden for insufficient role
+
+Performance :
+API responses should complete within a few seconds under normal usage
+System should handle multiple concurrent users without degradation
+Database connection pool is capped at 10 simultaneous connections to prevent overload
+Axios interceptors on the frontend handle token injection automatically without per-request overhead
+
+Data Integrity :
+All academic records (grades, enrollments, attendance) must be stored persistently in a PostgreSQL database
+CGPA and GPA values are recalculated from raw grade data on every finalization — no stale cached values
+Enrollment capacity is enforced at the database level to prevent overbooking
+Financial records maintain a full audit trail (amount, type, status, due date, payment date, transaction reference)
+
+Usability :
+Each role gets a dedicated dashboard with relevant quick-stats and navigation
+A role-specific sidebar provides consistent, intuitive navigation across all modules
+Toast notifications give immediate feedback on form submissions and actions
+The What-If Simulator and PDF grade sheet download are self-service features requiring no staff assistance
+
+Maintainability :
+Backend follows strict MVC architecture — models, controllers, and routes are fully separated
+Grading logic is isolated in a single utility module (gradingEngine.js) for easy modification
+Middleware is composable — authentication and role-checking are applied as independent layers
+All environment-sensitive values (DB credentials, JWT secret, port) are stored in a .env file
+
+Scalability :
+Sequelize ORM allows the database schema to evolve through model changes without manual SQL
+The course and user system supports any number of departments, programs, and courses
+File uploads are stored on disk with metadata in the database, keeping the DB lightweight
+
+Compatibility :
+Frontend is a React SPA (Vite-built) compatible with all modern web browsers
+The application is accessible on standard desktop and laptop devices
+REST API uses standard HTTP methods and JSON payloads, making it easy to integrate future clients (mobile apps, etc.)
+
+
